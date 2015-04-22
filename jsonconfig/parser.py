@@ -128,6 +128,8 @@ class JSONParser(TextParser):
             if self.text[pos] in '\r\n':
                 self.skip_to(pos + 1)
                 break
+        else:
+            self.skip_to(self.end)
 
     def _skip_multiline_comment(self):
         for pos in xrange(self.pos, self.end-1):

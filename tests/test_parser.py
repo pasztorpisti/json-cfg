@@ -224,6 +224,7 @@ class TestJSONParser(TestCase):
         self._test_with_data('/*comment*///singleline\n{key://singleline\r//\nnull//singleline\n\r}', expected)
         self._test_with_data('///*\n{key:null}//', expected)
         self._test_with_data('/*//*/{key:null}//', expected)
+        self._test_with_data('{key:null}//asdf', expected)
         self._assert_raises_regexp(r'Multiline comment isn\'t closed\.', '/*')
 
     def test_simple_string_escape_sequences(self):
