@@ -55,8 +55,8 @@ class ObjectBuilderParserListener(ParserListener):
         return self._object
 
     class ContainerType:
-        object = 1
-        array = 2
+        object = 0
+        array = 1
 
     @property
     def _state(self):
