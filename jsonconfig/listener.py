@@ -54,7 +54,7 @@ class ObjectBuilderParserListener(ParserListener):
         """ This property holds the parsed object or array after a successful parsing. """
         return self._object
 
-    class ValueType:
+    class ContainerType:
         object = 1
         array = 2
 
@@ -64,10 +64,10 @@ class ObjectBuilderParserListener(ParserListener):
 
     def _new_value(self, value):
         container_type, container = self._state
-        if container_type == self.ValueType.object:
+        if container_type == self.ContainerType.object:
             container[self._object_key] = value
             self._object_key = None
-        elif container_type == self.ValueType.array:
+        elif container_type == self.ContainerType.array:
             container.append(value)
 
     def _pop_container_stack(self):
@@ -78,7 +78,7 @@ class ObjectBuilderParserListener(ParserListener):
     def begin_object(self):
         obj = self.object_creator(self.parser)
         self._new_value(obj)
-        self._container_stack.append((self.ValueType.object, obj))
+        self._container_stack.append((self.ContainerType.object, obj))
 
     def end_object(self):
         self._pop_container_stack()
@@ -91,7 +91,7 @@ class ObjectBuilderParserListener(ParserListener):
     def begin_array(self):
         arr = self.array_creator(self.parser)
         self._new_value(arr)
-        self._container_stack.append((self.ValueType.array, arr))
+        self._container_stack.append((self.ContainerType.array, arr))
 
     def end_array(self):
         self._pop_container_stack()
