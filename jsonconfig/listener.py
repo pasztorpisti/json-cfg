@@ -1,11 +1,11 @@
 from .parser import ParserListener, ParserException
 
 
-def default_object_creator(parser):
+def default_object_creator(listener):
     return {}
 
 
-def default_array_creator(parser):
+def default_array_creator(listener):
     return []
 
 
@@ -22,7 +22,7 @@ class JSONValueConverter(object):
 
     _literal_not_found = object()
 
-    def __call__(self, parser, literal, literal_quoted):
+    def __call__(self, listener, literal, literal_quoted):
         if literal_quoted:
             return literal
 
@@ -31,7 +31,7 @@ class JSONValueConverter(object):
             try:
                 value = self.number_converter(literal)
             except ValueError:
-                raise ParserException(parser, 'Invalid json literal: "%s"' % (literal,))
+                listener.error('Invalid json literal: "%s"' % (literal,))
         return value
 
 
