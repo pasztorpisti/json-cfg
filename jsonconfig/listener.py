@@ -55,7 +55,6 @@ class ObjectBuilderParserListener(ParserListener):
         return self._object
 
     class ValueType:
-        literal = 0
         object = 1
         array = 2
 
