@@ -1,4 +1,0 @@
-
-
-class JSONConfigException(Exception):
-    pass

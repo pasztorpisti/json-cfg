@@ -1,8 +1,7 @@
-from .utils import JSONConfigException
 from .compatibility import xrange, unichr, utf8chr, is_unicode
 
 
-class ParserException(JSONConfigException):
+class ParserException(Exception):
     def __init__(self, parser, error_message):
         self.error_message = error_message
         self.line = parser.line + 1
@@ -161,8 +160,12 @@ class JSONParser(TextParser):
                     self.listener.end_object(self)
                     break
 
-            key, key_quoted = self._parse_and_return_literal(self.allow_unquoted_keys)
+            key, key_quoted, pos_after_literal = self._parse_and_return_literal(self.allow_unquoted_keys)
             self.listener.begin_object_item(self, key, key_quoted)
+            # We step self.pos and self.line only after a successful call to the listener
+            # because in case of an exception that is raised from the listener we want the
+            # line/column number to point to the beginning of the parsed literal.
+            self.skip_to(pos_after_literal)
 
             c = self._skip_spaces_and_peek()
             if c != ':':
@@ -207,10 +210,14 @@ class JSONParser(TextParser):
 
         if not quoted:
             begin = self.pos
-            self.skip_chars(self.end, lambda c: c not in self.spaces_and_special_chars)
-            if begin == self.pos:
+            for end in xrange(self.pos, self.end):
+                if self.text[end] in self.spaces_and_special_chars:
+                    break
+            else:
+                end = self.end
+            if begin == end:
                 self.error('Expected a literal here.')
-            return self.text[begin:self.pos], quoted
+            return self.text[begin:end], quoted, end
 
         result = []
         pos = self.pos + 1
@@ -224,7 +231,7 @@ class JSONParser(TextParser):
             elif c == '"':
                 if segment_begin < pos:
                     result.append(self.text[segment_begin:pos])
-                self.skip_to(pos + 1)
+                pos += 1
                 break
             elif c == '\\':
                 if segment_begin < pos:
@@ -264,11 +271,12 @@ class JSONParser(TextParser):
                 segment_begin = pos
             else:
                 pos += 1
-        return ''.join(result), quoted
+        return ''.join(result), quoted, pos
 
     def _parse_literal(self):
-        literal, quoted = self._parse_and_return_literal(True)
+        literal, quoted, pos_after_literal = self._parse_and_return_literal(True)
         self.listener.literal(self, literal, quoted)
+        self.skip_to(pos_after_literal)
 
     def _parse_value(self):
         c = self._skip_spaces_and_peek()
