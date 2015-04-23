@@ -132,30 +132,31 @@ class MyParserListener(ParserListener):
     Parser listener for testing.
     """
     def __init__(self):
+        super(MyParserListener, self).__init__()
         self.events = []
 
     @property
     def event_stream(self):
         return ''.join(self.events)
 
-    def begin_object(self, parser):
+    def begin_object(self):
         self.events.append('{')
 
-    def end_object(self, parser):
+    def end_object(self):
         self.events.append('}')
 
-    def begin_object_item(self, parser, key, key_quoted):
+    def begin_object_item(self, key, key_quoted):
         self.events.append(repr(key))
         self.events.append('q' if key_quoted else 'u')
         self.events.append(':')
 
-    def begin_array(self, parser):
+    def begin_array(self):
         self.events.append('[')
 
-    def end_array(self, parser):
+    def end_array(self):
         self.events.append(']')
 
-    def literal(self, parser, literal, literal_quoted):
+    def literal(self, literal, literal_quoted):
         self.events.append(repr(literal))
         self.events.append('q' if literal_quoted else 'u')
 

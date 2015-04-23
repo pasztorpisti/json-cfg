@@ -40,6 +40,7 @@ class ObjectBuilderParserListener(ParserListener):
                  object_creator=default_object_creator,
                  array_creator=default_array_creator,
                  value_converter=JSONValueConverter()):
+        super(ObjectBuilderParserListener, self).__init__()
         self.object_creator = object_creator
         self.array_creator = array_creator
         self.value_converter = value_converter
@@ -62,7 +63,7 @@ class ObjectBuilderParserListener(ParserListener):
     def _state(self):
         return self._container_stack[-1]
 
-    def _new_value(self, parser, value):
+    def _new_value(self, value):
         container_type, container = self._state
         if container_type == self.ValueType.object:
             container[self._object_key] = value
@@ -75,27 +76,27 @@ class ObjectBuilderParserListener(ParserListener):
             self._object = self._container_stack[-1][1]
         self._container_stack.pop()
 
-    def begin_object(self, parser):
-        obj = self.object_creator(parser)
-        self._new_value(parser, obj)
+    def begin_object(self):
+        obj = self.object_creator(self.parser)
+        self._new_value(obj)
         self._container_stack.append((self.ValueType.object, obj))
 
-    def end_object(self, parser):
+    def end_object(self):
         self._pop_container_stack()
 
-    def begin_object_item(self, parser, key, key_quoted):
+    def begin_object_item(self, key, key_quoted):
         if key in self._state[1]:
-            raise ParserException(parser, 'Duplicate key: "%s"' % (key,))
+            self.error('Duplicate key: "%s"' % (key,))
         self._object_key = key
 
-    def begin_array(self, parser):
-        arr = self.array_creator(parser)
-        self._new_value(parser, arr)
+    def begin_array(self):
+        arr = self.array_creator(self.parser)
+        self._new_value(arr)
         self._container_stack.append((self.ValueType.array, arr))
 
-    def end_array(self, parser):
+    def end_array(self):
         self._pop_container_stack()
 
-    def literal(self, parser, literal, literal_quoted):
-        value = self.value_converter(parser, literal, literal_quoted)
-        self._new_value(parser, value)
+    def literal(self, literal, literal_quoted):
+        value = self.value_converter(self.parser, literal, literal_quoted)
+        self._new_value(value)

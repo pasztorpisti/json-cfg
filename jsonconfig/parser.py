@@ -81,23 +81,27 @@ class JSONParser(TextParser):
         self.listener = None
 
     def parse(self, json_text, listener, root_is_list=False):
-        self.init_text_parser(json_text)
-        self.listener = listener
+        listener.begin_parsing(self)
+        try:
+            self.init_text_parser(json_text)
+            self.listener = listener
 
-        c = self._skip_spaces_and_peek()
-        if c == '{':
-            if root_is_list:
-                self.error('The root of the json is expected to be an array!')
-            self._parse_object()
-        elif c == '[':
-            if not root_is_list:
-                self.error('The root of the json is expected to be an object!')
-            self._parse_array()
-        else:
-            self.error('The json string should start with "%s"' % ('[' if root_is_list else '{'))
+            c = self._skip_spaces_and_peek()
+            if c == '{':
+                if root_is_list:
+                    self.error('The root of the json is expected to be an array!')
+                self._parse_object()
+            elif c == '[':
+                if not root_is_list:
+                    self.error('The root of the json is expected to be an object!')
+                self._parse_array()
+            else:
+                self.error('The json string should start with "%s"' % ('[' if root_is_list else '{'))
 
-        if self._skip_spaces_and_peek() is not None:
-            self.error('Garbage detected after the parsed json!')
+            if self._skip_spaces_and_peek() is not None:
+                self.error('Garbage detected after the parsed json!')
+        finally:
+            listener.end_parsing()
 
     def _skip_spaces_and_peek(self):
         """ Skips all spaces and comments.
@@ -140,13 +144,13 @@ class JSONParser(TextParser):
     def _parse_object(self):
         assert self.peek() == '{'
         self.skip_char()
-        self.listener.begin_object(self)
+        self.listener.begin_object()
         first_item = True
         while 1:
             c = self._skip_spaces_and_peek()
             if c == '}':
                 self.skip_char()
-                self.listener.end_object(self)
+                self.listener.end_object()
                 break
 
             if not first_item:
@@ -157,11 +161,11 @@ class JSONParser(TextParser):
                     if not self.allow_trailing_commas:
                         self.error('Trailing commas aren\'t enabled for this parser.')
                     self.skip_char()
-                    self.listener.end_object(self)
+                    self.listener.end_object()
                     break
 
             key, key_quoted, pos_after_literal = self._parse_and_return_literal(self.allow_unquoted_keys)
-            self.listener.begin_object_item(self, key, key_quoted)
+            self.listener.begin_object_item(key, key_quoted)
             # We step self.pos and self.line only after a successful call to the listener
             # because in case of an exception that is raised from the listener we want the
             # line/column number to point to the beginning of the parsed literal.
@@ -179,13 +183,13 @@ class JSONParser(TextParser):
     def _parse_array(self):
         assert self.peek() == '['
         self.skip_char()
-        self.listener.begin_array(self)
+        self.listener.begin_array()
         first_item = True
         while 1:
             c = self._skip_spaces_and_peek()
             if c == ']':
                 self.skip_char()
-                self.listener.end_array(self)
+                self.listener.end_array()
                 break
 
             if not first_item:
@@ -196,7 +200,7 @@ class JSONParser(TextParser):
                     if not self.allow_trailing_commas:
                         self.error('Trailing commas aren\'t enabled for this parser.')
                     self.skip_char()
-                    self.listener.end_array(self)
+                    self.listener.end_array()
                     break
 
             self._parse_value()
@@ -275,7 +279,7 @@ class JSONParser(TextParser):
 
     def _parse_literal(self):
         literal, quoted, pos_after_literal = self._parse_and_return_literal(True)
-        self.listener.literal(self, literal, quoted)
+        self.listener.literal(literal, quoted)
         self.skip_to(pos_after_literal)
 
     def _parse_value(self):
@@ -289,24 +293,32 @@ class JSONParser(TextParser):
 
 
 class ParserListener(object):
-    """
-    This class is here to serve as a documentation about the interface that
-    is expected by the JSONParser.
-    """
-    def begin_object(self, parser):
+    def __init__(self):
+        self.parser = None
+
+    def error(self, message):
+        raise ParserException(self.parser, message)
+
+    def begin_parsing(self, parser):
+        self.parser = parser
+
+    def end_parsing(self):
+        self.parser = None
+
+    def begin_object(self):
         raise NotImplementedError()
 
-    def end_object(self, parser):
+    def end_object(self):
         raise NotImplementedError()
 
-    def begin_object_item(self, parser, key, key_quoted):
+    def begin_object_item(self, key, key_quoted):
         raise NotImplementedError()
 
-    def begin_array(self, parser):
+    def begin_array(self):
         raise NotImplementedError()
 
-    def end_array(self, parser):
+    def end_array(self):
         raise NotImplementedError()
 
-    def literal(self, parser, literal, literal_quoted):
+    def literal(self, literal, literal_quoted):
         raise NotImplementedError()
