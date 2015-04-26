@@ -1,52 +1,17 @@
 from .parser import ParserListener
 
 
-def default_object_creator(listener):
-    return {}
-
-
-def default_array_creator(listener):
-    return []
-
-
-def default_number_converter(number_str):
-    return int(number_str) if number_str.isdigit() else float(number_str)
-
-
-class JSONValueConverter(object):
-    def __init__(self,
-                 number_converter=default_number_converter,
-                 json_literals={'null': None, 'true': True, 'false': False}):
-        self.number_converter = number_converter
-        self.json_literals = json_literals
-
-    _literal_not_found = object()
-
-    def __call__(self, listener, literal, literal_quoted):
-        if literal_quoted:
-            return literal
-
-        value = self.json_literals.get(literal, self._literal_not_found)
-        if value is self._literal_not_found:
-            try:
-                value = self.number_converter(literal)
-            except ValueError:
-                listener.error('Invalid json literal: "%s"' % (literal,))
-        return value
-
-
 class ObjectBuilderParserListener(ParserListener):
-    def __init__(self,
-                 object_creator=default_object_creator,
-                 array_creator=default_array_creator,
-                 value_converter=JSONValueConverter()):
+    """ A configurable parser listener implementation that can be configured to
+    build a json tree using the user supplied object/array/value factories. """
+    def __init__(self, object_creator, array_creator, value_converter):
         super(ObjectBuilderParserListener, self).__init__()
         self.object_creator = object_creator
         self.array_creator = array_creator
         self.value_converter = value_converter
 
         self._object_key = None
-        self._container_stack = [(None, None)]
+        self._container_stack = [(None, None, None)]
         self._object = None
 
     @property
@@ -63,12 +28,12 @@ class ObjectBuilderParserListener(ParserListener):
         return self._container_stack[-1]
 
     def _new_value(self, value):
-        container_type, container = self._state
+        container_type, container, insert_function = self._state
         if container_type == self.ContainerType.object:
-            container[self._object_key] = value
+            insert_function(self._object_key, value)
             self._object_key = None
         elif container_type == self.ContainerType.array:
-            container.append(value)
+            insert_function(value)
 
     def _pop_container_stack(self):
         if len(self._container_stack) == 2:
@@ -76,9 +41,9 @@ class ObjectBuilderParserListener(ParserListener):
         self._container_stack.pop()
 
     def begin_object(self):
-        obj = self.object_creator(self.parser)
+        obj, insert_function = self.object_creator(self)
         self._new_value(obj)
-        self._container_stack.append((self.ContainerType.object, obj))
+        self._container_stack.append((self.ContainerType.object, obj, insert_function))
 
     def end_object(self):
         self._pop_container_stack()
@@ -89,9 +54,9 @@ class ObjectBuilderParserListener(ParserListener):
         self._object_key = key
 
     def begin_array(self):
-        arr = self.array_creator(self.parser)
+        arr, append_function = self.array_creator(self)
         self._new_value(arr)
-        self._container_stack.append((self.ContainerType.array, arr))
+        self._container_stack.append((self.ContainerType.array, arr, append_function))
 
     def end_array(self):
         self._pop_container_stack()

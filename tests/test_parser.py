@@ -162,7 +162,7 @@ class MyParserListener(ParserListener):
 
 
 class TestJSONParser(TestCase):
-    def _test_with_data(self, input_json, expected_event_stream, root_is_list=False, allow_comments=True,
+    def _test_with_data(self, input_json, expected_event_stream, root_is_array=False, allow_comments=True,
                         allow_unquoted_keys=True, allow_trailing_commas=True):
         listener = MyParserListener()
         parser = JSONParser(
@@ -170,10 +170,10 @@ class TestJSONParser(TestCase):
             allow_unquoted_keys=allow_unquoted_keys,
             allow_trailing_commas=allow_trailing_commas,
         )
-        parser.parse(input_json, listener, root_is_list)
+        parser.parse(input_json, listener, root_is_array)
         self.assertEqual(listener.event_stream, expected_event_stream)
 
-    def _assert_raises_regexp(self, regexp, json_str, root_is_list=False, allow_comments=True,
+    def _assert_raises_regexp(self, regexp, json_str, root_is_array=False, allow_comments=True,
                               allow_unquoted_keys=True, allow_trailing_commas=True):
         listener = MyParserListener()
         parser = JSONParser(
@@ -181,9 +181,9 @@ class TestJSONParser(TestCase):
             allow_unquoted_keys=allow_unquoted_keys,
             allow_trailing_commas=allow_trailing_commas,
         )
-        self.assertRaisesRegexp(ParserException, regexp, parser.parse, json_str, listener, root_is_list)
+        self.assertRaisesRegexp(ParserException, regexp, parser.parse, json_str, listener, root_is_array)
 
-    def test_root_is_list(self):
+    def test_root_is_array(self):
         self._assert_raises_regexp('The root of the json is expected to be an array!', '{}', True)
         self._assert_raises_regexp('The root of the json is expected to be an object!', '[]', False)
 
@@ -230,14 +230,14 @@ class TestJSONParser(TestCase):
 
     def test_simple_string_escape_sequences(self):
         self._test_with_data(r'["xxx\\\/\"\b\f\t\r\nyyy"]', '[' + repr('xxx\\/\"\b\f\t\r\nyyy') + 'q]',
-                             root_is_list=True)
+                             root_is_array=True)
         self._assert_raises_regexp(r'Quoted string contains an invalid escape sequence\.',
-                                   r'["\k"]', root_is_list=True)
+                                   r'["\k"]', root_is_array=True)
 
     def test_unicode_escape_sequence(self):
         self._test_with_data(unicode(r'["XXX\u1234\u5678WWW\u9abcYYY"]'), u'[' + repr(u'XXX\u1234\u5678WWW\u9abcYYY') + u'q]',
-                             root_is_list=True)
+                             root_is_array=True)
 
     def test_control_character_in_quoted_string(self):
         self._assert_raises_regexp(r'Encountered a control character that isn\'t allowed in quoted strings\.',
-                                   '["\n"]', root_is_list=True)
+                                   '["\n"]', root_is_array=True)

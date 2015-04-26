@@ -1,12 +1,12 @@
 from .compatibility import xrange, unichr, utf8chr, is_unicode
+from .exceptions import JSONConfigException
 
 
-class ParserException(Exception):
+class ParserException(JSONConfigException):
     def __init__(self, parser, error_message):
         self.error_message = error_message
         self.line = parser.line + 1
-        # FIXME: Should we handle tab sizes? What tabsize to use?
-        self.column = max(0, parser.pos - parser.line_pos) + 1
+        self.column = parser.column + 1
         message = '%s [line=%s;col=%s]' % (error_message, self.line, self.column)
         super(ParserException, self).__init__(message)
 
@@ -20,6 +20,11 @@ class TextParser(object):
         self.line = 0
         self.line_pos = 0
         self.prev_newline_char = None
+
+    @property
+    def column(self):
+        # FIXME: Should we handle tab sizes? What tabsize to use?
+        return self.pos - self.line_pos
 
     def init_text_parser(self, text):
         assert self.text is None
@@ -80,7 +85,7 @@ class JSONParser(TextParser):
         self.allow_trailing_commas = allow_trailing_commas
         self.listener = None
 
-    def parse(self, json_text, listener, root_is_list=False):
+    def parse(self, json_text, listener, root_is_array=False):
         listener.begin_parsing(self)
         try:
             self.init_text_parser(json_text)
@@ -88,15 +93,15 @@ class JSONParser(TextParser):
 
             c = self._skip_spaces_and_peek()
             if c == '{':
-                if root_is_list:
+                if root_is_array:
                     self.error('The root of the json is expected to be an array!')
                 self._parse_object()
             elif c == '[':
-                if not root_is_list:
+                if not root_is_array:
                     self.error('The root of the json is expected to be an object!')
                 self._parse_array()
             else:
-                self.error('The json string should start with "%s"' % ('[' if root_is_list else '{'))
+                self.error('The json string should start with "%s"' % ('[' if root_is_array else '{'))
 
             if self._skip_spaces_and_peek() is not None:
                 self.error('Garbage detected after the parsed json!')
@@ -143,8 +148,8 @@ class JSONParser(TextParser):
 
     def _parse_object(self):
         assert self.peek() == '{'
-        self.skip_char()
         self.listener.begin_object()
+        self.skip_char()
         first_item = True
         while 1:
             c = self._skip_spaces_and_peek()
@@ -182,8 +187,8 @@ class JSONParser(TextParser):
 
     def _parse_array(self):
         assert self.peek() == '['
-        self.skip_char()
         self.listener.begin_array()
+        self.skip_char()
         first_item = True
         while 1:
             c = self._skip_spaces_and_peek()
@@ -294,6 +299,7 @@ class JSONParser(TextParser):
 
 class ParserListener(object):
     def __init__(self):
+        super(ParserListener, self).__init__()
         self.parser = None
 
     def error(self, message):
