@@ -1,4 +1,4 @@
-from .parser import ParserListener, ParserException
+from .parser import ParserListener
 
 
 def default_object_creator(listener):
