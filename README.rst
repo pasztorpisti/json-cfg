@@ -19,6 +19,8 @@ the following extras compared to the standard json.loads():
 Config file examples
 --------------------
 
+*Hint: use javascript syntax highlight in your text editor for json config files whenever possible*
+
 **Traditional json config file:**
 
 .. code:: javascript
