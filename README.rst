@@ -11,7 +11,8 @@ the following extras compared to the standard json.loads():
     - trailing commas (allowing commas after the last item of objects and arrays)
 
 - Providing line number information for each element of the loaded config file
-  and using this to display useful error messages that help locating errors.
+  and using this to display useful error messages that help locating errors not
+  only while parsing the file but also when processing/interpreting it.
 - A nice config query syntax that handles default values, required elements and
   automatically raises an exception in case of error (with useful info including
   the location of the error in the config file).
