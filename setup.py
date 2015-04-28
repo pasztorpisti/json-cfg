@@ -34,7 +34,7 @@ setup(
     description='JSON config file parser',
     #long_description=long_description,
 
-    url='https://github.com/pasztorpisti/jsoncfg',
+    url='https://github.com/pasztorpisti/json-cfg',
 
     author='István Pásztor',
     author_email='pasztorpisti@gmail.com',
