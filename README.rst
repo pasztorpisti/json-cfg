@@ -1,7 +1,7 @@
 json-cfg
 ========
 
-The goal of this project is to provide a json config file loader that provides
+The goal of this project is providing a json config file loader that has
 the following extras compared to the standard json.loads():
 
 - A larger subset of javascript (and not some weird/exotic extension to json that
