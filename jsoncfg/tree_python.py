@@ -23,7 +23,8 @@ def default_array_creator(listener):
 
 
 def default_number_converter(number_str):
-    return int(number_str) if number_str.isdigit() else float(number_str)
+    is_int = (number_str.startswith('-') and number_str[1:].isdigit()) or number_str.isdigit()
+    return int(number_str) if is_int else float(number_str)
 
 
 class JSONValueConverter(object):
