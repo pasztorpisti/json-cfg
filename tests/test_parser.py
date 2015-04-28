@@ -235,8 +235,55 @@ class TestJSONParser(TestCase):
                                    r'["\k"]', root_is_array=True)
 
     def test_unicode_escape_sequence(self):
-        self._test_with_data(unicode(r'["XXX\u1234\u5678WWW\u9abcYYY"]'), u'[' + repr(u'XXX\u1234\u5678WWW\u9abcYYY') + u'q]',
+        self._test_with_data(unicode(r'["XXX\u1234\u5678WWW\u9abcYYY"]'),
+                             u'[' + repr(u'XXX\u1234\u5678WWW\u9abcYYY') + u'q]',
                              root_is_array=True)
+
+    def _perform_surrogate_test(self, escaped_json_string, decoded_python_string):
+        self._test_with_data(unicode('["' + escaped_json_string + '"]'),
+                             u'[' + repr(decoded_python_string) + u'q]',
+                             root_is_array=True)
+
+    def test_surrogate_pair_codepoint_calculation(self):
+        self._perform_surrogate_test(r'WWW\ud800\udc00XXX\ud900\ude80YYY\udbff\udfffZZZ',
+                                     u'WWW\U00010000XXX\U00050280YYY\U0010ffffZZZ')
+
+    def test_lone_surrogates(self):
+        self._perform_surrogate_test(r'XXX\ud800YYY\udc00ZZZ',
+                                     u'XXX\ud800YYY\udc00ZZZ')
+
+    def test_high_low_surrogate_sequences(self):
+        # Testing the decoding of 4 subsequent surrogates. Each of the 4 surrogates
+        # can be either low or high surrogate so this leads to 2^4 == 16 cases.
+        cases = [
+            # zero bit means low surrogate, set bit means high surrogate
+            (0b0000, u'\udc00\udc00\udc00\udc00'),
+            (0b0001, u'\udc00\udc00\udc00\ud800'),
+            (0b0010, u'\udc00\udc00\U00010000'),
+            (0b0011, u'\udc00\udc00\ud800\ud800'),
+
+            (0b0100, u'\udc00\U00010000\udc00'),
+            (0b0101, u'\udc00\U00010000\ud800'),
+            (0b0110, u'\udc00\ud800\U00010000'),
+            (0b0111, u'\udc00\ud800\ud800\ud800'),
+
+            (0b1000, u'\U00010000\udc00\udc00'),
+            (0b1001, u'\U00010000\udc00\ud800'),
+            (0b1010, u'\U00010000\U00010000'),
+            (0b1011, u'\U00010000\ud800\ud800'),
+
+            (0b1100, u'\ud800\U00010000\udc00'),
+            (0b1101, u'\ud800\U00010000\ud800'),
+            (0b1110, u'\ud800\ud800\U00010000'),
+            (0b1111, u'\ud800\ud800\ud800\ud800'),
+        ]
+
+        for mask, decoded_python_string in cases:
+            #print('Mask: ' + bin(mask))
+            escaped_json_string = ''
+            for bit in (0b1000, 0b0100, 0b0010, 0b0001):
+                escaped_json_string += r'\ud800' if bit & mask else r'\udc00'
+            self._perform_surrogate_test(escaped_json_string, decoded_python_string)
 
     def test_control_character_in_quoted_string(self):
         self._assert_raises_regexp(r'Encountered a control character that isn\'t allowed in quoted strings\.',
