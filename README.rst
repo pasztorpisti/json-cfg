@@ -19,9 +19,9 @@ the following extras compared to the standard json.loads():
 Config file examples
 --------------------
 
-*Hint: use javascript syntax highlight in your text editor for json config files whenever possible*
+*Hint: use javascript syntax highlight in your text editor for json config files whenever possible - this makes reading config files much easier especially when you have a lot of comments or large commented config blocks.*
 
-**Traditional json config file:**
+**A traditional json config file:**
 
 .. code:: javascript
 
@@ -39,7 +39,7 @@ Config file examples
         "superusername": "tron"
     }
 
-**The same with extended json:**
+**The same with jsonconfig:**
 
 .. code:: javascript
     
