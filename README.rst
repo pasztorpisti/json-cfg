@@ -1,10 +1,10 @@
-jsonconfig
-==========
+json-cfg
+========
 
 The goal of this project is to provide a json config file loader that provides
 the following extras compared to the standard json.loads():
 
-- A larger subset of javascript:
+- A larger subset of javascript (not some weird/exotic extension to json):
 
     - single and multi-line comments
     - object (dictionary) keys without quotes
@@ -39,7 +39,7 @@ Config file examples
         "superusername": "tron"
     }
 
-**The same with jsonconfig:**
+**The same with json-cfg:**
 
 .. code:: javascript
     

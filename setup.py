@@ -29,12 +29,12 @@ def find_version(*path):
 #    long_description = f.read()
 
 setup(
-    name='jsonconfig',
-    version=find_version('jsonconfig', '__init__.py'),
+    name='json-cfg',
+    version=find_version('jsoncfg', '__init__.py'),
     description='JSON config file parser',
     #long_description=long_description,
 
-    url='https://github.com/pasztorpisti/jsonconfig',
+    url='https://github.com/pasztorpisti/jsoncfg',
 
     author='István Pásztor',
     author_email='pasztorpisti@gmail.com',
@@ -56,5 +56,5 @@ setup(
     ],
 
     keywords='json configuration jsonconfiguration json-configuration comment',
-    packages=['jsonconfig', 'tests'],
+    packages=['jsoncfg', 'tests'],
 )

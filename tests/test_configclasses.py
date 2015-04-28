@@ -1,7 +1,7 @@
 from unittest import TestCase
-from jsonconfig import JSONConfigValueNotFoundError
-from jsonconfig.configclasses import ValueNotFoundNode, ConfigJSONValue, ConfigJSONObject, ConfigJSONArray
-from jsonconfig import loads_config
+from jsoncfg import JSONConfigValueNotFoundError
+from jsoncfg.configclasses import ValueNotFoundNode, ConfigJSONValue, ConfigJSONObject, ConfigJSONArray
+from jsoncfg import loads_config
 
 
 TEST_JSON_STRING = """

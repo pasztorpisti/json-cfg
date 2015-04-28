@@ -1,5 +1,5 @@
 from unittest import TestCase
-from jsonconfig import loads, loads_config, ParserException
+from jsoncfg import loads, loads_config, ParserException
 
 
 TEST_JSON_STRING = """
