@@ -4,7 +4,8 @@ json-cfg
 The goal of this project is to provide a json config file loader that provides
 the following extras compared to the standard json.loads():
 
-- A larger subset of javascript (not some weird/exotic extension to json):
+- A larger subset of javascript (and not some weird/exotic extension to json that
+    turns the whole stuff itno something that has nothing to do with json/javascript):
 
     - single and multi-line comments
     - object (dictionary) keys without quotes
@@ -16,6 +17,7 @@ the following extras compared to the standard json.loads():
 - A nice config query syntax that handles default values, required elements and
   automatically raises an exception in case of error (with useful info including
   the location of the error in the config file).
+
 
 Config file examples
 --------------------
@@ -63,6 +65,16 @@ Config file examples
         ],
         superusername: "tron",  // <-- optional trailing comma
     }
+
+Building...
+-----------
+
+The beta of this library will be ready by the end of the week so visit
+back if you are interested.
+
+Sorry for the missing docs. The library is basically ready and its low
+level code is quite well covered with test but I will have to add some
+more high level test code along with the documentation and the examples.
 
 Brief code examples
 -------------------
