@@ -236,23 +236,53 @@ class JSONParser(TextParser):
             self._parse_value()
             first_item = False
 
+    def _parse_value(self):
+        c = self._skip_spaces_and_peek()
+        if c == '{':
+            self._parse_object()
+        elif c == '[':
+            self._parse_array()
+        else:
+            self._parse_literal()
+
+    def _parse_literal(self):
+        literal, quoted, pos_after_literal = self._parse_and_return_literal(True)
+        self.listener.literal(literal, quoted)
+        self.skip_to(pos_after_literal)
+
     def _parse_and_return_literal(self, allow_unquoted):
         c = self._skip_spaces_and_peek()
         quoted = c == '"'
         if not quoted and not allow_unquoted:
             self.error('Unquoted keys arn\'t allowed.')
 
-        if not quoted:
-            begin = self.pos
-            for end in xrange(self.pos, self.end):
-                if self.text[end] in self.spaces_and_special_chars:
-                    break
-            else:
-                end = self.end
-            if begin == end:
-                self.error('Expected a literal here.')
-            return self.text[begin:end], quoted, end
+        if quoted:
+            return self._parse_and_return_quoted_literal()
+        return self._parse_and_return_unquoted_literal()
 
+    def _parse_and_return_unquoted_literal(self):
+        """
+        Parses a literal that has no quotation marks so it doesn't
+        contain any special characters and we don't have to interpret
+        any escape sequences.
+        :return: (literal, quoted=False, end_of_literal_pos)
+        """
+        begin = self.pos
+        for end in xrange(self.pos, self.end):
+            if self.text[end] in self.spaces_and_special_chars:
+                break
+        else:
+            end = self.end
+        if begin == end:
+            self.error('Expected a literal here.')
+        return self.text[begin:end], False, end
+
+    def _parse_and_return_quoted_literal(self):
+        """
+        Parses a literal that has quotation marks so it may contain
+        special characters and escape sequences.
+        :return: (unescaped_literal, quoted=True, end_of_literal_pos)
+        """
         result = []
         pos = self.pos + 1
         segment_begin = pos
@@ -275,53 +305,53 @@ class JSONParser(TextParser):
                     self.error('Reached the end of stream while parsing quoted string.')
                 c = self.text[pos]
                 if c == 'u':
-                    if self.end - pos < 5:
-                        self.error('Reached the end of stream while parsing quoted string.')
-                    pos += 1
-                    try:
-                        # FIXME: yesterday I've noticed that I don't handle utf-16 surrogate pairs
-                        # here but the fix is already on my machine, I just haven't tested/committed it.
-                        codepoint = int(self.text[pos:pos+4], 16)
-                    except ValueError:
-                        self.skip_to(pos - 2)
-                        self.error('Error decoding unicode escape sequence.')
-                    else:
-                        result.append(my_chr(codepoint))
-                        pos += 4
+                    codepoint, pos = self._handle_unicode_escape(pos)
+                    result.append(my_chr(codepoint))
                 else:
-                    d = {
-                        '\\': '\\',
-                        '/': '/',
-                        '"': '"',
-                        'b': '\b',
-                        'f': '\f',
-                        't': '\t',
-                        'r': '\r',
-                        'n': '\n',
-                    }.get(c)
-                    if d is None:
-                        self.skip_to(pos - 1)
-                        self.error('Quoted string contains an invalid escape sequence.')
-                    result.append(d)
-                    pos += 1
+                    char, pos = self._handle_escape(pos, c)
+                    result.append(char)
                 segment_begin = pos
             else:
                 pos += 1
-        return ''.join(result), quoted, pos
+        return ''.join(result), True, pos
 
-    def _parse_literal(self):
-        literal, quoted, pos_after_literal = self._parse_and_return_literal(True)
-        self.listener.literal(literal, quoted)
-        self.skip_to(pos_after_literal)
+    def _handle_unicode_escape(self, pos):
+        if self.end - pos < 5:
+            self.error('Reached the end of stream while parsing quoted string.')
+        pos += 1
+        try:
+            codepoint = int(self.text[pos:pos+4], 16)
+        except ValueError:
+            self.skip_to(pos - 2)
+            self.error('Error decoding unicode escape sequence.')
+        pos += 4
+        if 0xd800 <= codepoint < 0xdc00 and self.end-pos >= 6 and\
+                self.text[pos] == '\\' and self.text[pos+1] == 'u':
+            try:
+                low_surrogate = int(self.text[pos+2:pos+6], 16)
+            except ValueError:
+                self.skip_to(pos)
+                self.error('Error decoding unicode escape sequence.')
+            if 0xdc00 <= low_surrogate < 0xe000:
+                pos += 6
+                codepoint = 0x10000 + (((codepoint - 0xd800) << 10) | (low_surrogate - 0xdc00))
+        return codepoint, pos
 
-    def _parse_value(self):
-        c = self._skip_spaces_and_peek()
-        if c == '{':
-            self._parse_object()
-        elif c == '[':
-            self._parse_array()
-        else:
-            self._parse_literal()
+    def _handle_escape(self, pos, c):
+        char = {
+            '\\': '\\',
+            '/': '/',
+            '"': '"',
+            'b': '\b',
+            'f': '\f',
+            't': '\t',
+            'r': '\r',
+            'n': '\n',
+        }.get(c)
+        if char is None:
+            self.skip_to(pos - 1)
+            self.error('Quoted string contains an invalid escape sequence.')
+        return char, pos + 1
 
 
 class ParserListener(object):
