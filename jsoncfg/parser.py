@@ -12,6 +12,10 @@ class ParserException(JSONConfigException):
 
 
 class TextParser(object):
+    """
+    A base class for parsers. It handles the position in the parsed text and
+    tracks the current position in the text (line number, column, etc...).
+    """
     def __init__(self):
         super(TextParser, self).__init__()
         self.text = None
@@ -56,24 +60,40 @@ class TextParser(object):
             self.pos = target_pos
 
     def skip_to(self, target_pos):
+        """
+        Moves the pointer to target_pos (if the current position is less than target_pos)
+        and keeps track the current line/column.
+        """
         self.skip_chars(target_pos, lambda c: True)
 
     def skip_char(self):
+        """ Skips a single character. """
         self.skip_to(self.pos + 1)
 
     def peek(self, offset=0):
+        """ Looking forward in the input text without actually stepping the current position.
+        returns None if the current position is at the end of the input. """
         pos = self.pos + offset
         if pos >= self.end:
             return None
         return self.text[pos]
 
     def expect(self, c):
+        """ If the current position doesn't hold the specified c character then it raises an
+        exception, otherwise it skips the specified character (moves the current position forward). """
         if self.peek() != c:
             self.error('Expected "%c"' % (c,))
         self.skip_char()
 
 
 class JSONParser(TextParser):
+    """
+    A simple json parser that works with a fixed sized input buffer (without input streaming) but
+    this should not be a problem in case of config files that usually have a small limited size.
+    This parser mits events similarly to a SAX XML parser. The user of this class can implement
+    several differnt kind of event listeners. We will work with a listener that builds a json
+    object hierarchy but later we could implement for example a json validator listener...
+    """
     spaces = set(' \t\r\n')
     special_chars = set('{}[]",:/*')
     spaces_and_special_chars = spaces | special_chars
@@ -86,6 +106,11 @@ class JSONParser(TextParser):
         self.listener = None
 
     def parse(self, json_text, listener, root_is_array=False):
+        """
+        Parses the specified json_text and emits parser events to the listener.
+        If root_is_array then the root element of the json has to be an array/list,
+        otherwise the expected root is a json object/dict.
+        """
         listener.begin_parsing(self)
         try:
             self.init_text_parser(json_text)
@@ -254,6 +279,8 @@ class JSONParser(TextParser):
                         self.error('Reached the end of stream while parsing quoted string.')
                     pos += 1
                     try:
+                        # FIXME: yesterday I've noticed that I don't handle utf-16 surrogate pairs
+                        # here but the fix is already on my machine, I just haven't tested/committed it.
                         codepoint = int(self.text[pos:pos+4], 16)
                     except ValueError:
                         self.skip_to(pos - 2)
@@ -298,6 +325,7 @@ class JSONParser(TextParser):
 
 
 class ParserListener(object):
+    """ Base class for parser listeners. """
     def __init__(self):
         super(ParserListener, self).__init__()
         self.parser = None
