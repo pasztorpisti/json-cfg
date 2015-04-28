@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from .exceptions import JSONConfigException
 from .parser import ParserException
 from .configclasses import JSONConfigQueryError, JSONConfigValueConverterError, JSONConfigValueNotFoundError
@@ -16,3 +18,5 @@ __all__ = [
 # version_info[2]: adding only bugfixes without interface modification
 version_info = (0, 0, 0)
 __version__ = '.'.join(str(n) for n in version_info)
+__author__ = 'István Pásztor'
+__license__ = 'MIT'
