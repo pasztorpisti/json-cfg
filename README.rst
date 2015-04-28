@@ -5,7 +5,7 @@ The goal of this project is to provide a json config file loader that provides
 the following extras compared to the standard json.loads():
 
 - A larger subset of javascript (and not some weird/exotic extension to json that
-    turns the whole stuff itno something that has nothing to do with json/javascript):
+  would turn json into something that has nothing to do with json/javascript):
 
     - single and multi-line comments
     - object (dictionary) keys without quotes
