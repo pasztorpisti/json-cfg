@@ -59,6 +59,7 @@ class JSONConfigValueNotFoundError(JSONConfigQueryError):
             else:
                 path.append('.' + component)
         self.relative_path = ''.join(path)
+        # TODO: improve the error message: it is possible to do so based on the info we have
         message = 'Required config node not found. Missing query path: %s (relative to error location)' % self.relative_path
         super(JSONConfigValueNotFoundError, self).__init__(value_not_found.parent_config_node, message)
 
