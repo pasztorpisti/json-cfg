@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from distutils.core import setup
 import os
 import re
 import codecs
+try:
+    from setuptools import setup
+    have_setuptools = True
+except ImportError:
+    from distutils.core import setup
+    have_setuptools = False
+
 
 script_dir = os.path.abspath(os.path.dirname(__file__))
 
@@ -27,6 +33,12 @@ def find_version(*path):
 # Get the long description from the relevant file
 #with open('DESCRIPTION.rst', encoding='utf-8') as f:
 #    long_description = f.read()
+
+
+extra_setup_params = {}
+if have_setuptools:
+    extra_setup_params['test_suite'] = 'tests'
+
 
 setup(
     name='json-cfg',
@@ -57,4 +69,6 @@ setup(
 
     keywords='json configuration jsonconfiguration json-configuration comment',
     packages=['jsoncfg', 'tests'],
+
+    **extra_setup_params
 )
