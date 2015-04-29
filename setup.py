@@ -31,7 +31,7 @@ def find_version(*path):
 setup(
     name='json-cfg',
     version=find_version('jsoncfg', '__init__.py'),
-    description='JSON config file parser',
+    description='JSON config file parser with extended syntax (e.g.: comments), line/column numbers and other extras.',
     #long_description=long_description,
 
     url='https://github.com/pasztorpisti/json-cfg',
