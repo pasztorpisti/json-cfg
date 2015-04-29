@@ -90,8 +90,8 @@ class JSONParser(TextParser):
     """
     A simple json parser that works with a fixed sized input buffer (without input streaming) but
     this should not be a problem in case of config files that usually have a small limited size.
-    This parser mits events similarly to a SAX XML parser. The user of this class can implement
-    several differnt kind of event listeners. We will work with a listener that builds a json
+    This parser emits events similarly to a SAX XML parser. The user of this class can implement
+    several different kind of event listeners. We will work with a listener that builds a json
     object hierarchy but later we could implement for example a json validator listener...
     """
     spaces = set(' \t\r\n')
