@@ -4,14 +4,21 @@ a json tree that consists of pure python objects. With these factories we can lo
 json objects just like the python standard json.loads() but our parser allows an
 extended syntax (unquoted keys, comments, trailing commas).
 """
+from collections import OrderedDict
 
 
-def default_object_creator(listener):
-    obj = {}
+class DefaultObjectCreator(object):
+    # You can pass OrderedDict in the dict_class parameter but we keep the default
+    # value as dict
+    def __init__(self, dict_class=OrderedDict):
+        self.dict_class = dict_class
 
-    def insert_function(key, value):
-        obj[key] = value
-    return obj, insert_function
+    def __call__(self, listener):
+        obj = self.dict_class()
+
+        def insert_function(key, value):
+            obj[key] = value
+        return obj, insert_function
 
 
 def default_array_creator(listener):

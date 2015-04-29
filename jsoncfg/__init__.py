@@ -7,7 +7,7 @@ from .configclasses import JSONConfigQueryError, JSONConfigValueMapperError,\
     node_exists, node_is_object, node_is_array, node_is_value,\
     ensure_exists, ensure_object, ensure_array, ensure_value
 from .functions import loads, load, loads_config, load_config
-from .tree_python import default_object_creator, default_array_creator, default_number_converter, JSONValueConverter
+from .tree_python import DefaultObjectCreator, default_array_creator, default_number_converter, JSONValueConverter
 
 __all__ = [
     'JSONConfigException',
@@ -17,7 +17,7 @@ __all__ = [
     'node_exists', 'node_is_object', 'node_is_array', 'node_is_value',
     'ensure_exists', 'ensure_object', 'ensure_array', 'ensure_value'
     'loads', 'load', 'loads_config', 'load_config',
-    'default_object_creator', 'default_array_creator', 'default_number_converter', 'JSONValueConverter',
+    'DefaultObjectCreator', 'default_array_creator', 'default_number_converter', 'JSONValueConverter',
 ]
 
 # version_info[0]: increase in case of large rewrites that are not backward compatible

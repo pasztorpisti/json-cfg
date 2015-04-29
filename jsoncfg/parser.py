@@ -14,7 +14,7 @@ class ParserException(JSONConfigException):
 class TextParser(object):
     """
     A base class for parsers. It handles the position in the parsed text and
-    tracks the current position in the text (line number, column, etc...).
+    tracks the current line/column number.
     """
     def __init__(self):
         super(TextParser, self).__init__()

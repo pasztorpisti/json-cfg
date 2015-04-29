@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from .exceptions import JSONConfigException
 import numbers
 
@@ -169,7 +170,7 @@ class ConfigJSONObject(_ConfigNode):
 
     def __init__(self, line, column):
         super(ConfigJSONObject, self).__init__(line, column)
-        self._dict = {}
+        self._dict = OrderedDict()
 
     def __getattr__(self, item):
         return self.__getitem__(item)
