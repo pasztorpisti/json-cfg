@@ -2,13 +2,20 @@
 
 from .exceptions import JSONConfigException
 from .parser import ParserException
-from .configclasses import JSONConfigQueryError, JSONConfigValueConverterError, JSONConfigValueNotFoundError
+from .configclasses import JSONConfigQueryError, JSONConfigValueMapperError,\
+    JSONConfigValueNotFoundError, JSONConfigNodeTypeError,\
+    node_exists, node_is_object, node_is_array, node_is_value,\
+    ensure_exists, ensure_object, ensure_array, ensure_value
 from .functions import loads, load, loads_config, load_config
 from .tree_python import default_object_creator, default_array_creator, default_number_converter, JSONValueConverter
 
 __all__ = [
-    'JSONConfigException', 'ParserException',
-    'JSONConfigQueryError', 'JSONConfigValueConverterError', 'JSONConfigValueNotFoundError',
+    'JSONConfigException',
+    'ParserException',
+    'JSONConfigQueryError', 'JSONConfigValueMapperError',
+    'JSONConfigValueNotFoundError', 'JSONConfigNodeTypeError',
+    'node_exists', 'node_is_object', 'node_is_array', 'node_is_value',
+    'ensure_exists', 'ensure_object', 'ensure_array', 'ensure_value'
     'loads', 'load', 'loads_config', 'load_config',
     'default_object_creator', 'default_array_creator', 'default_number_converter', 'JSONValueConverter',
 ]

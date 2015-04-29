@@ -24,6 +24,8 @@ def default_array_creator(listener):
 
 def default_number_converter(number_str):
     is_int = (number_str.startswith('-') and number_str[1:].isdigit()) or number_str.isdigit()
+    # FIXME: this handles a wider range of numbers than allowed by the json standard,
+    # etc.: float('nan') and float('inf'). But is this a problem?
     return int(number_str) if is_int else float(number_str)
 
 

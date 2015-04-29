@@ -1,7 +1,9 @@
 from unittest import TestCase
 from jsoncfg import JSONConfigValueNotFoundError
-from jsoncfg.configclasses import ValueNotFoundNode, ConfigJSONValue, ConfigJSONObject, ConfigJSONArray
-from jsoncfg import loads_config
+from jsoncfg.configclasses import ValueNotFoundNode, ConfigJSONValue, ConfigJSONObject, ConfigJSONArray, \
+    JSONConfigNodeTypeError
+from jsoncfg import loads_config, node_exists, node_is_object, node_is_array, node_is_value,\
+    ensure_exists, ensure_object, ensure_array, ensure_value
 
 
 TEST_JSON_STRING = """
@@ -72,8 +74,13 @@ class TestConfigJSONObject(TestCase):
 
     def test_iter(self):
         config = loads_config('{k0:0, k1:1}')
-        keys = set(iter(config))
-        self.assertSetEqual(keys, {'k0', 'k1'})
+        result = {k: v() for k, v in config}
+        self.assertDictEqual(result, {'k0': 0, 'k1': 1})
+
+    def test_in_operator(self):
+        config = loads_config('{k0:0}')
+        self.assertTrue('k0' in config)
+        self.assertFalse('k1' in config)
 
     def test_getitem(self):
         config = loads_config(TEST_JSON_STRING)
@@ -105,3 +112,59 @@ class TestConfigJSONArray(TestCase):
     def test_item_not_found(self):
         config = loads_config(TEST_JSON_STRING)
         self.assertRaises(JSONConfigValueNotFoundError, config.array[100].blahblah)
+
+
+class TestUtilityFunctions(TestCase):
+    def test_node_exists(self):
+        config = loads_config('{k0:0}')
+        self.assertTrue(node_exists(config))
+        self.assertTrue(node_exists(config.k0))
+        self.assertFalse(node_exists(config.k1))
+
+    def test_node_is_object(self):
+        config = loads_config('{k0:0}')
+        self.assertTrue(node_is_object(config))
+        self.assertFalse(node_is_object(config.k0))
+        self.assertFalse(node_is_object(config.k1))
+
+    def test_node_is_array(self):
+        config = loads_config('[0]', root_is_array=True)
+        self.assertTrue(node_is_array(config))
+        self.assertFalse(node_is_array(config[0]))
+        self.assertFalse(node_is_array(config[1]))
+
+    def test_node_is_value(self):
+        config = loads_config('[0]', root_is_array=True)
+        self.assertFalse(node_is_value(config))
+        self.assertTrue(node_is_value(config[0]))
+        self.assertFalse(node_is_value(config[1]))
+
+    def test_ensure_exists(self):
+        config = loads_config('{}')
+        self.assertIs(config, ensure_exists(config))
+        self.assertRaises(JSONConfigValueNotFoundError, ensure_exists, config.a)
+        self.assertRaises(ValueError, ensure_exists, None)
+
+    def test_ensure_object(self):
+        config = loads_config('{a:0}')
+        self.assertIs(config, ensure_object(config))
+        self.assertRaises(JSONConfigValueNotFoundError, ensure_object, config.b)
+        self.assertRaises(JSONConfigNodeTypeError, ensure_object, config.a)
+        self.assertRaises(ValueError, ensure_object, None)
+
+    def test_ensure_array(self):
+        config = loads_config('[0]', root_is_array=True)
+        self.assertIs(config, ensure_array(config))
+        self.assertRaises(JSONConfigValueNotFoundError, ensure_array, config[1])
+        self.assertRaises(JSONConfigNodeTypeError, ensure_array, config[0])
+        self.assertRaises(ValueError, ensure_array, None)
+
+    def test_ensure_value(self):
+        config = loads_config('[0]', root_is_array=True)
+        self.assertIs(config[0], ensure_value(config[0]))
+        self.assertRaises(JSONConfigValueNotFoundError, ensure_value, config[1])
+        self.assertRaises(JSONConfigNodeTypeError, ensure_value, config)
+        self.assertRaises(ValueError, ensure_value, None)
+
+
+# TODO: write tests for the mapper parameter of the query fetcher function call
