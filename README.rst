@@ -5,14 +5,14 @@ json-cfg
 .. image:: https://img.shields.io/travis/pasztorpisti/json-cfg.svg?style=flat
     :target: https://travis-ci.org/pasztorpisti/json-cfg
 
+.. image:: https://img.shields.io/codacy/25854a088e89472f9fbf2bd5c1633834.svg?style=flat
+    :target: https://www.codacy.com/app/pasztorpisti/json-cfg
+
 .. image:: https://img.shields.io/pypi/v/json-cfg.svg?style=flat
     :target: https://pypi.python.org/pypi/json-cfg
 
 .. image:: https://img.shields.io/github/tag/pasztorpisti/json-cfg.svg?style=flat
     :target: https://github.com/pasztorpisti/json-cfg
-
-.. image:: https://img.shields.io/codacy/25854a088e89472f9fbf2bd5c1633834.svg?style=flat
-    :target: https://www.codacy.com/app/pasztorpisti/json-cfg
 
 .. image:: https://img.shields.io/github/license/pasztorpisti/json-cfg.svg?style=flat
     :target: https://github.com/pasztorpisti/json-cfg/blob/master/LICENSE.txt
