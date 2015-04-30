@@ -1,5 +1,12 @@
+========
 json-cfg
 ========
+
+.. image:: https://img.shields.io/travis/pasztorpisti/json-cfg.svg?style=flat
+    :target: https://travis-ci.org/pasztorpisti/json-cfg
+
+.. image:: https://img.shields.io/pypi/v/json-cfg.svg?style=flat
+    :target: https://pypi.python.org/pypi/json-cfg
 
 The goal of this library is providing a json config file loader that has
 the following extras compared to the standard json.loads():
@@ -66,15 +73,14 @@ Config file examples
         superusername: "tron",  // <-- optional trailing comma
     }
 
-Building...
------------
+Installation
+------------
 
-The beta of this library will be ready by the end of the week so visit
-back if you are interested.
+.. code:: sh
 
-Sorry for the missing docs. The library is basically ready and its low
-level code is quite well covered with test but I will have to add some
-more high level test code along with the documentation and the examples.
+    pip install json-cfg
+
+As an alternative you can download the zipped library from https://pypi.python.org/pypi/json-cfg
 
 Brief code examples
 -------------------
