@@ -11,7 +11,9 @@ class ObjectBuilderParserListener(ParserListener):
         self.value_converter = value_converter
 
         self._object_key = None
-        self._container_stack = [(None, None, None)]
+        # The lambda function could actually be a None but that way we get a warning in
+        # self._new_value() that the insert_function isn't callable...
+        self._container_stack = [(None, None, lambda *args: None)]
         self._object = None
 
     @property
