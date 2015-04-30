@@ -1,3 +1,7 @@
+"""
+This file contains the JSON parser that works like a SAX XML parser.
+"""
+
 from .compatibility import xrange, unichr, utf8chr, is_unicode
 from .exceptions import JSONConfigException
 
@@ -110,6 +114,9 @@ class JSONParser(TextParser):
         Parses the specified json_text and emits parser events to the listener.
         If root_is_array then the root element of the json has to be an array/list,
         otherwise the expected root is a json object/dict.
+
+        In case of python2 the json_text can be either an utf8 encoded string
+        or a unicode object and the fired parser events will use the same format.
         """
         listener.begin_parsing(self)
         try:
