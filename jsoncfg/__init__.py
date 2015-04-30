@@ -23,7 +23,7 @@ __all__ = [
 # version_info[0]: increase in case of large rewrites that are not backward compatible
 # version_info[1]: increase in case of adding new features that keep old ones backward compatible
 # version_info[2]: adding only bugfixes without interface modification
-version_info = (0, 1, 0)
+version_info = (0, 2, 0)
 __version__ = '.'.join(str(n) for n in version_info)
 __author__ = 'István Pásztor'
 __license__ = 'MIT'
