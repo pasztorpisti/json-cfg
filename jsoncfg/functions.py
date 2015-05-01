@@ -8,13 +8,19 @@ from .tree_python import DefaultObjectCreator, DefaultArrayCreator, JSONValueCon
 from .tree_config import config_object_creator, config_array_creator, ConfigValueConverter
 
 
+def get_python_object_builder(object_creator=None,
+                              array_creator=None,
+                              value_converter=None):
+        return ObjectBuilderParams(
+            object_creator=DefaultObjectCreator() if object_creator is None else object_creator,
+            array_creator=DefaultArrayCreator() if array_creator is None else array_creator,
+            value_converter=JSONValueConverter() if value_converter is None else value_converter,
+        )
+
+
 def loads(s,
           parser_params=JSONParserParams(),
-          object_builder_params=ObjectBuilderParams(
-              object_creator=DefaultObjectCreator(),
-              array_creator=DefaultArrayCreator(),
-              value_converter=JSONValueConverter(),
-          )):
+          object_builder_params=get_python_object_builder()):
     """
     Loads a json string as a python object just like the standard json.loads().
     :param s: The json string to load.

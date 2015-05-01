@@ -6,8 +6,10 @@ from .configclasses import JSONConfigQueryError, JSONConfigValueMapperError,\
     JSONConfigValueNotFoundError, JSONConfigNodeTypeError,\
     node_exists, node_is_object, node_is_array, node_is_value,\
     ensure_exists, ensure_object, ensure_array, ensure_value
-from .functions import loads, load, loads_config, load_config, JSONParserParams, ObjectBuilderParams
-from .tree_python import DefaultObjectCreator, DefaultArrayCreator, default_number_converter, JSONValueConverter
+from .functions import loads, load, loads_config, load_config, get_python_object_builder,\
+    JSONParserParams, ObjectBuilderParams
+from .tree_python import DefaultObjectCreator, DefaultArrayCreator, default_number_converter,\
+    JSONValueConverter
 
 __all__ = [
     'JSONConfigException',
@@ -16,8 +18,10 @@ __all__ = [
     'JSONConfigValueNotFoundError', 'JSONConfigNodeTypeError',
     'node_exists', 'node_is_object', 'node_is_array', 'node_is_value',
     'ensure_exists', 'ensure_object', 'ensure_array', 'ensure_value',
-    'loads', 'load', 'loads_config', 'load_config', 'JSONParserParams', 'ObjectBuilderParams',
-    'DefaultObjectCreator', 'DefaultArrayCreator', 'default_number_converter', 'JSONValueConverter',
+    'loads', 'load', 'loads_config', 'load_config', 'get_python_object_builder',
+    'JSONParserParams', 'ObjectBuilderParams',
+    'DefaultObjectCreator', 'DefaultArrayCreator', 'default_number_converter',
+    'JSONValueConverter',
 ]
 
 # version_info[0]: increase in case of large rewrites that are not backward compatible
