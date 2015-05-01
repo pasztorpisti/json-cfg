@@ -15,7 +15,7 @@ __all__ = [
     'JSONConfigQueryError', 'JSONConfigValueMapperError',
     'JSONConfigValueNotFoundError', 'JSONConfigNodeTypeError',
     'node_exists', 'node_is_object', 'node_is_array', 'node_is_value',
-    'ensure_exists', 'ensure_object', 'ensure_array', 'ensure_value'
+    'ensure_exists', 'ensure_object', 'ensure_array', 'ensure_value',
     'loads', 'load', 'loads_config', 'load_config',
     'DefaultObjectCreator', 'default_array_creator', 'default_number_converter', 'JSONValueConverter',
 ]
