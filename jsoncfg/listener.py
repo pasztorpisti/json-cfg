@@ -30,7 +30,7 @@ class ObjectBuilderParserListener(ParserListener):
         return self._container_stack[-1]
 
     def _new_value(self, value):
-        container_type, container, insert_function = self._state
+        container_type, _, insert_function = self._state
         if container_type == self.ContainerType.object:
             insert_function(self._object_key, value)
             self._object_key = None

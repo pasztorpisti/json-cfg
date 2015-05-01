@@ -39,9 +39,12 @@ def default_number_converter(number_str):
 class JSONValueConverter(object):
     def __init__(self,
                  number_converter=default_number_converter,
-                 json_literals={'null': None, 'true': True, 'false': False}):
+                 json_literals=None):
         self.number_converter = number_converter
-        self.json_literals = json_literals
+        if json_literals is None:
+            self.json_literals = {'null': None, 'true': True, 'false': False}
+        else:
+            self.json_literals = json_literals
 
     _literal_not_found = object()
 
