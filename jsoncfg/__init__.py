@@ -2,7 +2,7 @@
 
 from .exceptions import JSONConfigException
 from .parser import ParserException
-from .configclasses import JSONConfigQueryError, JSONConfigValueMapperError,\
+from .config_classes import JSONConfigQueryError, JSONConfigValueMapperError,\
     JSONConfigValueNotFoundError, JSONConfigNodeTypeError,\
     node_exists, node_is_object, node_is_array, node_is_value,\
     ensure_exists, ensure_object, ensure_array, ensure_value

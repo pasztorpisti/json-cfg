@@ -1,6 +1,6 @@
 from unittest import TestCase
 from jsoncfg import JSONConfigValueNotFoundError, JSONParserParams
-from jsoncfg.configclasses import ValueNotFoundNode, ConfigJSONValue, ConfigJSONObject, ConfigJSONArray, \
+from jsoncfg.config_classes import ValueNotFoundNode, ConfigJSONValue, ConfigJSONObject, ConfigJSONArray, \
     JSONConfigNodeTypeError
 from jsoncfg import loads_config, node_exists, node_is_object, node_is_array, node_is_value,\
     ensure_exists, ensure_object, ensure_array, ensure_value

@@ -3,7 +3,7 @@ Contains the load functions that we use as the public interface of this whole li
 """
 
 from .parser import JSONParserParams, JSONParser
-from .listener import ObjectBuilderParserListener, ObjectBuilderParams
+from .parser_listener import ObjectBuilderParserListener, ObjectBuilderParams
 from .tree_python import DefaultObjectCreator, DefaultArrayCreator, JSONValueConverter
 from .tree_config import config_object_creator, config_array_creator, ConfigValueConverter
 

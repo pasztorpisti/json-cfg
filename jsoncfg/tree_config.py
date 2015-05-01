@@ -11,7 +11,7 @@ some other info).
 """
 
 
-from .configclasses import ConfigJSONObject, ConfigJSONArray, ConfigJSONValue
+from .config_classes import ConfigJSONObject, ConfigJSONArray, ConfigJSONValue
 
 
 def config_object_creator(listener):
