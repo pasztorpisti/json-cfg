@@ -168,7 +168,6 @@ class TestJSONParser(TestCase):
         parser.parse(input_json, listener)
         self.assertEqual(listener.event_stream, expected_event_stream)
 
-
     def _assert_raises_regexp(self, regexp, json_str, root_is_array=False, parser_params=JSONParserParams()):
         parser_params.root_is_array = root_is_array
         listener = MyParserListener()
