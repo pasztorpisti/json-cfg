@@ -29,7 +29,7 @@ def loads(s,
     parser = JSONParser(parser_params)
     listener = ObjectBuilderParserListener(object_builder_params)
     parser.parse(s, listener)
-    return listener.object
+    return listener.result
 
 
 def load(filename, *args, **kwargs):
@@ -69,7 +69,7 @@ def loads_config(s,
     )
     listener = ObjectBuilderParserListener(object_builder_params)
     parser.parse(s, listener)
-    return listener.object
+    return listener.result
 
 
 def load_config(filename, *args, **kwargs):

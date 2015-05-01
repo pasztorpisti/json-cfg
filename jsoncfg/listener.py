@@ -43,14 +43,14 @@ class ObjectBuilderParserListener(ParserListener):
         # The lambda function could actually be a None but that way we get a warning in
         # self._new_value() that the insert_function isn't callable...
         self._container_stack = [(None, None, lambda *args: None)]
-        self._object = None
+        self._result = None
 
     @property
-    def object(self):
+    def result(self):
         """ This property holds the parsed object or array after a successful parsing. """
-        return self._object
+        return self._result
 
-    class ContainerType:
+    class ContainerType(object):
         object = 0
         array = 1
 
@@ -68,7 +68,7 @@ class ObjectBuilderParserListener(ParserListener):
 
     def _pop_container_stack(self):
         if len(self._container_stack) == 2:
-            self._object = self._container_stack[-1][1]
+            self._result = self._container_stack[-1][1]
         self._container_stack.pop()
 
     def begin_object(self):
