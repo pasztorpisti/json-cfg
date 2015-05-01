@@ -90,6 +90,26 @@ class TextParser(object):
         self.skip_char()
 
 
+class JSONParserParams(object):
+    def __init__(self, **params):
+        """
+        :param root_is_array: True: the root of the json hierarchy must be an object/dict.
+        False: the root of the json hierarchy must be an array/list.
+        :param allow_comments: True: allow single/multi-line comments.
+        :param allow_unquoted_keys: Specifying true allows the json object keys to be
+        specified without quotes if they don't contain spaces or special characters.
+        :param allow_trailing_commas: Allow putting an optional comma after the last
+        item in json objects and arrays. Comes handy when you are exchanging lines in
+        the config with copy pasting.
+        """
+        self.root_is_array = params.pop('root_is_array', False)
+        self.allow_comments = params.pop('allow_comments', True)
+        self.allow_unquoted_keys = params.pop('allow_unquoted_keys', True)
+        self.allow_trailing_commas = params.pop('allow_trailing_commas', True)
+        if params:
+            raise RuntimeError('Unexpected keyword arguments: %s' % (params,))
+
+
 class JSONParser(TextParser):
     """
     A simple json parser that works with a fixed sized input buffer (without input streaming) but
@@ -102,14 +122,12 @@ class JSONParser(TextParser):
     special_chars = set('{}[]",:/*')
     spaces_and_special_chars = spaces | special_chars
 
-    def __init__(self, allow_comments=True, allow_unquoted_keys=True, allow_trailing_commas=True):
+    def __init__(self, params=JSONParserParams()):
         super(JSONParser, self).__init__()
-        self.allow_comments = allow_comments
-        self.allow_unquoted_keys = allow_unquoted_keys
-        self.allow_trailing_commas = allow_trailing_commas
+        self.params = params
         self.listener = None
 
-    def parse(self, json_text, listener, root_is_array=False):
+    def parse(self, json_text, listener):
         """
         Parses the specified json_text and emits parser events to the listener.
         If root_is_array then the root element of the json has to be an array/list,
@@ -125,15 +143,15 @@ class JSONParser(TextParser):
 
             c = self._skip_spaces_and_peek()
             if c == '{':
-                if root_is_array:
+                if self.params.root_is_array:
                     self.error('The root of the json is expected to be an array!')
                 self._parse_object()
             elif c == '[':
-                if not root_is_array:
+                if not self.params.root_is_array:
                     self.error('The root of the json is expected to be an object!')
                 self._parse_array()
             else:
-                self.error('The json string should start with "%s"' % ('[' if root_is_array else '{'))
+                self.error('The json string should start with "%s"' % ('[' if self.params.root_is_array else '{'))
 
             if self._skip_spaces_and_peek() is not None:
                 self.error('Garbage detected after the parsed json!')
@@ -149,7 +167,7 @@ class JSONParser(TextParser):
             # skipping spaces
             self.skip_chars(self.end, lambda c: c in self.spaces)
             c = self.peek()
-            if not self.allow_comments:
+            if not self.params.allow_comments:
                 return c
             if c != '/':
                 return c
@@ -195,13 +213,13 @@ class JSONParser(TextParser):
 
                 c = self._skip_spaces_and_peek()
                 if c == '}':
-                    if not self.allow_trailing_commas:
+                    if not self.params.allow_trailing_commas:
                         self.error('Trailing commas aren\'t enabled for this parser.')
                     self.skip_char()
                     self.listener.end_object()
                     break
 
-            key, key_quoted, pos_after_literal = self._parse_and_return_literal(self.allow_unquoted_keys)
+            key, key_quoted, pos_after_literal = self._parse_and_return_literal(self.params.allow_unquoted_keys)
             self.listener.begin_object_item(key, key_quoted)
             # We step self.pos and self.line only after a successful call to the listener
             # because in case of an exception that is raised from the listener we want the
@@ -234,7 +252,7 @@ class JSONParser(TextParser):
 
                 c = self._skip_spaces_and_peek()
                 if c == ']':
-                    if not self.allow_trailing_commas:
+                    if not self.params.allow_trailing_commas:
                         self.error('Trailing commas aren\'t enabled for this parser.')
                     self.skip_char()
                     self.listener.end_array()

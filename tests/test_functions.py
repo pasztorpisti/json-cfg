@@ -1,5 +1,5 @@
 from unittest import TestCase
-from jsoncfg import loads, loads_config, ParserException
+from jsoncfg import loads, loads_config, ParserException, JSONParserParams
 
 
 TEST_JSON_STRING = """
@@ -33,7 +33,7 @@ class TestLoads(TestCase):
         self.assertDictEqual(obj, TEST_JSON_VALUE)
 
     def test_root_is_array(self):
-        lst = loads("[0, 1, 2]", root_is_array=True)
+        lst = loads("[0, 1, 2]", JSONParserParams(root_is_array=True))
         self.assertListEqual(lst, [0, 1, 2])
 
     def test_invalid_literal(self):
@@ -51,7 +51,7 @@ class TestLoadsConfig(TestCase):
         self.assertDictEqual(obj(), TEST_JSON_VALUE)
 
     def test_root_is_array(self):
-        lst = loads_config("[0, 1, 2]", root_is_array=True)
+        lst = loads_config("[0, 1, 2]", JSONParserParams(root_is_array=True))
         self.assertListEqual(lst(), [0, 1, 2])
 
     def test_invalid_literal(self):

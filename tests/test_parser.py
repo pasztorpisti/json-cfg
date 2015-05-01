@@ -1,5 +1,5 @@
 from unittest import TestCase
-from jsoncfg.parser import TextParser, ParserException, ParserListener, JSONParser
+from jsoncfg.parser import TextParser, ParserException, ParserListener, JSONParser, JSONParserParams
 from jsoncfg.compatibility import unicode
 
 
@@ -162,26 +162,18 @@ class MyParserListener(ParserListener):
 
 
 class TestJSONParser(TestCase):
-    def _test_with_data(self, input_json, expected_event_stream, root_is_array=False, allow_comments=True,
-                        allow_unquoted_keys=True, allow_trailing_commas=True):
+    def _test_with_data(self, input_json, expected_event_stream, root_is_array=False):
         listener = MyParserListener()
-        parser = JSONParser(
-            allow_comments=allow_comments,
-            allow_unquoted_keys=allow_unquoted_keys,
-            allow_trailing_commas=allow_trailing_commas,
-        )
-        parser.parse(input_json, listener, root_is_array)
+        parser = JSONParser(JSONParserParams(root_is_array=root_is_array))
+        parser.parse(input_json, listener)
         self.assertEqual(listener.event_stream, expected_event_stream)
 
-    def _assert_raises_regexp(self, regexp, json_str, root_is_array=False, allow_comments=True,
-                              allow_unquoted_keys=True, allow_trailing_commas=True):
+
+    def _assert_raises_regexp(self, regexp, json_str, root_is_array=False, parser_params=JSONParserParams()):
+        parser_params.root_is_array = root_is_array
         listener = MyParserListener()
-        parser = JSONParser(
-            allow_comments=allow_comments,
-            allow_unquoted_keys=allow_unquoted_keys,
-            allow_trailing_commas=allow_trailing_commas,
-        )
-        self.assertRaisesRegexp(ParserException, regexp, parser.parse, json_str, listener, root_is_array)
+        parser = JSONParser(parser_params)
+        self.assertRaisesRegexp(ParserException, regexp, parser.parse, json_str, listener)
 
     def test_root_is_array(self):
         self._assert_raises_regexp('The root of the json is expected to be an array!', '{}', True)
@@ -209,14 +201,15 @@ class TestJSONParser(TestCase):
 
     def test_trailing_commas(self):
         self._assert_raises_regexp(r'Trailing commas aren\'t enabled for this parser\.',
-                                   '{k:[null,]}', allow_trailing_commas=False)
+                                   '{k:[null,]}', parser_params=JSONParserParams(allow_trailing_commas=False))
         self._assert_raises_regexp(r'Trailing commas aren\'t enabled for this parser\.',
-                                   '{k:[null],}', allow_trailing_commas=False)
+                                   '{k:[null],}', parser_params=JSONParserParams(allow_trailing_commas=False))
         self._test_with_data('{k:[null,]}', "{'k'u:['null'u]}")
         self._test_with_data('{k:[null],}', "{'k'u:['null'u]}")
 
     def test_unquoted_keys(self):
-        self._assert_raises_regexp(r'Unquoted keys arn\'t allowed\.', '{key:null}', allow_unquoted_keys=False)
+        self._assert_raises_regexp(r'Unquoted keys arn\'t allowed\.', '{key:null}',
+                                   parser_params=JSONParserParams(allow_unquoted_keys=False))
         self._test_with_data('{key:null}', "{'key'u:'null'u}")
 
     def test_comments(self):

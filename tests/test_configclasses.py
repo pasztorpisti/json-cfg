@@ -1,5 +1,5 @@
 from unittest import TestCase
-from jsoncfg import JSONConfigValueNotFoundError
+from jsoncfg import JSONConfigValueNotFoundError, JSONParserParams
 from jsoncfg.configclasses import ValueNotFoundNode, ConfigJSONValue, ConfigJSONObject, ConfigJSONArray, \
     JSONConfigNodeTypeError
 from jsoncfg import loads_config, node_exists, node_is_object, node_is_array, node_is_value,\
@@ -95,12 +95,16 @@ class TestConfigJSONObject(TestCase):
 
 
 class TestConfigJSONArray(TestCase):
+    @staticmethod
+    def loads_array_config(json_string):
+        return loads_config(json_string, JSONParserParams(root_is_array=True))
+
     def test_len(self):
-        config = loads_config('[0, 1]', root_is_array=True)
+        config = self.loads_array_config('[0, 1]')
         self.assertEqual(len(config), 2)
 
     def test_iter(self):
-        config = loads_config('[0, 1]', root_is_array=True)
+        config = self.loads_array_config('[0, 1]')
         items = set(config_val() for config_val in config)
         self.assertSetEqual(items, {0, 1})
 
@@ -115,6 +119,10 @@ class TestConfigJSONArray(TestCase):
 
 
 class TestUtilityFunctions(TestCase):
+    @staticmethod
+    def loads_array_config(json_string):
+        return loads_config(json_string, JSONParserParams(root_is_array=True))
+
     def test_node_exists(self):
         config = loads_config('{k0:0}')
         self.assertTrue(node_exists(config))
@@ -128,13 +136,13 @@ class TestUtilityFunctions(TestCase):
         self.assertFalse(node_is_object(config.k1))
 
     def test_node_is_array(self):
-        config = loads_config('[0]', root_is_array=True)
+        config = self.loads_array_config('[0]')
         self.assertTrue(node_is_array(config))
         self.assertFalse(node_is_array(config[0]))
         self.assertFalse(node_is_array(config[1]))
 
     def test_node_is_value(self):
-        config = loads_config('[0]', root_is_array=True)
+        config = self.loads_array_config('[0]')
         self.assertFalse(node_is_value(config))
         self.assertTrue(node_is_value(config[0]))
         self.assertFalse(node_is_value(config[1]))
@@ -153,14 +161,14 @@ class TestUtilityFunctions(TestCase):
         self.assertRaises(ValueError, ensure_object, None)
 
     def test_ensure_array(self):
-        config = loads_config('[0]', root_is_array=True)
+        config = self.loads_array_config('[0]')
         self.assertIs(config, ensure_array(config))
         self.assertRaises(JSONConfigValueNotFoundError, ensure_array, config[1])
         self.assertRaises(JSONConfigNodeTypeError, ensure_array, config[0])
         self.assertRaises(ValueError, ensure_array, None)
 
     def test_ensure_value(self):
-        config = loads_config('[0]', root_is_array=True)
+        config = self.loads_array_config('[0]')
         self.assertIs(config[0], ensure_value(config[0]))
         self.assertRaises(JSONConfigValueNotFoundError, ensure_value, config[1])
         self.assertRaises(JSONConfigNodeTypeError, ensure_value, config)
