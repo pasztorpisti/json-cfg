@@ -75,7 +75,8 @@ class JSONConfigNodeTypeError(JSONConfigQueryError):
         """
         :param expected_type_name: It should be 'json_object', 'json_array' or 'json_value'.
         """
-        message = 'Expected a %s but found %s' % (expected_type_name, config_node._json_type)
+        type_found = _config_node_type_names.get(config_node.__class__, 'unknown')
+        message = 'Expected a %s but found %s' % (expected_type_name, type_found)
         super(JSONConfigNodeTypeError, self).__init__(config_node, message)
 
 
@@ -113,9 +114,6 @@ class _ConfigNode(object):
     config files.
     """
 
-    # used for error reporting
-    _json_type = 'unknown'
-
     def __init__(self, line, column):
         """
         :param line: Zero based line number. (Add 1 for human readable error reporting).
@@ -139,8 +137,6 @@ class _ConfigNode(object):
 
 
 class ConfigJSONValue(_ConfigNode):
-    _json_type = 'json_value'
-
     def __init__(self, value, line, column):
         super(ConfigJSONValue, self).__init__(line, column)
         self.value = value
@@ -166,8 +162,6 @@ class ConfigJSONValue(_ConfigNode):
 
 
 class ConfigJSONObject(_ConfigNode):
-    _json_type = 'json_object'
-
     def __init__(self, line, column):
         super(ConfigJSONObject, self).__init__(line, column)
         self._dict = OrderedDict()
@@ -201,8 +195,6 @@ class ConfigJSONObject(_ConfigNode):
 
 
 class ConfigJSONArray(_ConfigNode):
-    _json_type = 'json_array'
-
     def __init__(self, line, column):
         super(ConfigJSONArray, self).__init__(line, column)
         self._list = []
@@ -235,6 +227,13 @@ class ConfigJSONArray(_ConfigNode):
         self._list.append(item)
 
 
+_config_node_type_names = {
+    ConfigJSONObject: 'json_object',
+    ConfigJSONArray: 'json_array',
+    ConfigJSONValue: 'json_value',
+}
+
+
 def node_exists(config_node):
     """ Returns True if the specified config node
     refers to an existing config entry. """
@@ -265,7 +264,8 @@ def _guarantee_node_class(config_node, node_class):
     if isinstance(config_node, ValueNotFoundNode):
         raise JSONConfigValueNotFoundError(config_node)
     if isinstance(config_node, _ConfigNode):
-        raise JSONConfigNodeTypeError(config_node, node_class._json_type)
+        type_name = _config_node_type_names.get(node_class, 'unknown')
+        raise JSONConfigNodeTypeError(config_node, type_name)
     raise ValueError('Expected a %s or %s instance but received %s.' % (
         _ConfigNode.__name__, ValueNotFoundNode.__name__, config_node.__class__.__name__))
 
