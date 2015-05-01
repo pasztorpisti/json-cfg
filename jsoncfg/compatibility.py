@@ -9,23 +9,24 @@ import sys
 python2 = sys.version_info[0] == 2
 
 
-xrange = xrange if python2 else range
-unichr = unichr if python2 else chr
-
 if python2:
+    my_xrange = xrange
+    my_unichr = unichr
+    unicode_str = unicode
+
     def is_unicode(s):
         return isinstance(s, unicode)
 
     def utf8chr(codepoint):
         return unichr(codepoint).encode('utf-8')
-
-    unicode = unicode
 else:
+    my_xrange = range
+    my_unichr = chr
+    unicode_str = str
+
     def is_unicode(s):
         return isinstance(s, str)
 
     # This is here just to satisfy import statements.
-    def utf8chr(codepoint):
+    def utf8chr(_):
         return RuntimeError('This should never be called in case of python3.')
-
-    unicode = str

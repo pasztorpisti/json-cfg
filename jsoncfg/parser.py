@@ -2,7 +2,7 @@
 This file contains the JSON parser that works like a SAX XML parser.
 """
 
-from .compatibility import xrange, unichr, utf8chr, is_unicode
+from .compatibility import my_xrange, my_unichr, utf8chr, is_unicode
 from .exceptions import JSONConfigException
 
 
@@ -45,7 +45,7 @@ class TextParser(object):
     def skip_chars(self, target_pos, is_char_skippable_func):
         assert self.pos <= target_pos <= self.end
         target_pos = min(target_pos, self.end)
-        for self.pos in xrange(self.pos, target_pos):
+        for self.pos in my_xrange(self.pos, target_pos):
             c = self.text[self.pos]
             if not is_char_skippable_func(c):
                 break
@@ -182,7 +182,7 @@ class JSONParser(TextParser):
                 return c
 
     def _skip_singleline_comment(self):
-        for pos in xrange(self.pos, self.end):
+        for pos in my_xrange(self.pos, self.end):
             if self.text[pos] in '\r\n':
                 self.skip_to(pos + 1)
                 break
@@ -190,7 +190,7 @@ class JSONParser(TextParser):
             self.skip_to(self.end)
 
     def _skip_multiline_comment(self):
-        for pos in xrange(self.pos, self.end-1):
+        for pos in my_xrange(self.pos, self.end-1):
             if self.text[pos] == '*' and self.text[pos+1] == '/':
                 self.skip_to(pos + 2)
                 return
@@ -293,7 +293,7 @@ class JSONParser(TextParser):
         :return: (literal, quoted=False, end_of_literal_pos)
         """
         begin = self.pos
-        for end in xrange(self.pos, self.end):
+        for end in my_xrange(self.pos, self.end):
             if self.text[end] in self.spaces_and_special_chars:
                 break
         else:
@@ -311,7 +311,7 @@ class JSONParser(TextParser):
         result = []
         pos = self.pos + 1
         segment_begin = pos
-        my_chr = unichr if is_unicode(self.text) else utf8chr
+        my_chr = my_unichr if is_unicode(self.text) else utf8chr
         while pos < self.end:
             c = self.text[pos]
             if c < ' ' and c != '\t':
@@ -349,18 +349,20 @@ class JSONParser(TextParser):
         except ValueError:
             self.skip_to(pos - 2)
             self.error('Error decoding unicode escape sequence.')
-        pos += 4
-        if 0xd800 <= codepoint < 0xdc00 and self.end-pos >= 6 and\
-                self.text[pos] == '\\' and self.text[pos+1] == 'u':
-            try:
-                low_surrogate = int(self.text[pos+2:pos+6], 16)
-            except ValueError:
-                self.skip_to(pos)
-                self.error('Error decoding unicode escape sequence.')
-            if 0xdc00 <= low_surrogate < 0xe000:
-                pos += 6
-                codepoint = 0x10000 + (((codepoint - 0xd800) << 10) | (low_surrogate - 0xdc00))
-        return codepoint, pos
+        else:
+            pos += 4
+            if 0xd800 <= codepoint < 0xdc00 and self.end-pos >= 6 and\
+                    self.text[pos] == '\\' and self.text[pos+1] == 'u':
+                try:
+                    low_surrogate = int(self.text[pos+2:pos+6], 16)
+                except ValueError:
+                    self.skip_to(pos)
+                    self.error('Error decoding unicode escape sequence.')
+                else:
+                    if 0xdc00 <= low_surrogate < 0xe000:
+                        pos += 6
+                        codepoint = 0x10000 + (((codepoint - 0xd800) << 10) | (low_surrogate - 0xdc00))
+            return codepoint, pos
 
     def _handle_escape(self, pos, c):
         char = {
