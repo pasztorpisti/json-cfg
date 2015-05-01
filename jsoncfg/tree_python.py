@@ -21,12 +21,16 @@ class DefaultObjectCreator(object):
         return obj, insert_function
 
 
-def default_array_creator(listener):
-    array = []
+class DefaultArrayCreator(object):
+    def __init__(self, list_class=list):
+        self.list_class = list_class
 
-    def append_function(item):
-        array.append(item)
-    return array, append_function
+    def __call__(self, listener):
+        array = self.list_class()
+
+        def append_function(item):
+            array.append(item)
+        return array, append_function
 
 
 def default_number_converter(number_str):

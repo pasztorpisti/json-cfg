@@ -4,7 +4,7 @@ Contains the load functions that we use as the public interface of this whole li
 
 from .parser import JSONParserParams, JSONParser
 from .listener import ObjectBuilderParserListener, ObjectBuilderParams
-from .tree_python import DefaultObjectCreator, default_array_creator, JSONValueConverter
+from .tree_python import DefaultObjectCreator, DefaultArrayCreator, JSONValueConverter
 from .tree_config import config_object_creator, config_array_creator, ConfigValueConverter
 
 
@@ -12,7 +12,7 @@ def loads(s,
           parser_params=JSONParserParams(),
           object_builder_params=ObjectBuilderParams(
               object_creator=DefaultObjectCreator(),
-              array_creator=default_array_creator,
+              array_creator=DefaultArrayCreator(),
               value_converter=JSONValueConverter(),
           )):
     """
