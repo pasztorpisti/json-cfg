@@ -6,7 +6,7 @@ from .configclasses import JSONConfigQueryError, JSONConfigValueMapperError,\
     JSONConfigValueNotFoundError, JSONConfigNodeTypeError,\
     node_exists, node_is_object, node_is_array, node_is_value,\
     ensure_exists, ensure_object, ensure_array, ensure_value
-from .functions import loads, load, loads_config, load_config, get_python_object_builder,\
+from .functions import loads, load, loads_config, load_config, get_python_object_builder_params,\
     JSONParserParams, ObjectBuilderParams
 from .tree_python import DefaultObjectCreator, DefaultArrayCreator, default_number_converter,\
     JSONValueConverter
@@ -18,7 +18,7 @@ __all__ = [
     'JSONConfigValueNotFoundError', 'JSONConfigNodeTypeError',
     'node_exists', 'node_is_object', 'node_is_array', 'node_is_value',
     'ensure_exists', 'ensure_object', 'ensure_array', 'ensure_value',
-    'loads', 'load', 'loads_config', 'load_config', 'get_python_object_builder',
+    'loads', 'load', 'loads_config', 'load_config', 'get_python_object_builder_params',
     'JSONParserParams', 'ObjectBuilderParams',
     'DefaultObjectCreator', 'DefaultArrayCreator', 'default_number_converter',
     'JSONValueConverter',

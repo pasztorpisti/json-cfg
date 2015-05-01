@@ -8,7 +8,12 @@ from .tree_python import DefaultObjectCreator, DefaultArrayCreator, JSONValueCon
 from .tree_config import config_object_creator, config_array_creator, ConfigValueConverter
 
 
-def get_python_object_builder(**kwargs):
+def get_python_object_builder_params(**kwargs):
+    """
+    Creates a parameter structure for the ObjectBuilderParserListener. By default
+    it initializes all factories so that the parsed object hierarchy will consist
+    standard python objects (OrderedDicts, lists, etc...).
+    """
     object_creator = kwargs.pop('object_creator', None)
     array_creator = kwargs.pop('array_creator', None)
     value_converter = kwargs.pop('value_converter', None)
@@ -23,17 +28,16 @@ def get_python_object_builder(**kwargs):
 
 def loads(s,
           parser_params=JSONParserParams(),
-          object_builder_params=get_python_object_builder()):
+          object_builder_params=get_python_object_builder_params()):
     """
-    Loads a json string as a python object just like the standard json.loads().
+    Loads a json string as a python object hierarchy just like the standard json.loads(). Unlike
+    the standard json.loads() this function uses OrderedDict instances to represent json objects
+    but the class of the dictionary to be used is configurable.
     :param s: The json string to load.
     :params parser_params: Parser parameters.
     :type parser_params: JSONParserParams
     :param object_builder_params: Parameters to the ObjectBuilderParserListener, these parameters
-    are mostly factories to create the json object hierarchy while parsing.
-    :return: After interpreting the string representation of the parsed value you have to return
-    a processed value that will be inserted in the json object hierarchy to be returned by this
-    function.
+    are mostly factories to create the python object hierarchy while parsing.
     """
     parser = JSONParser(parser_params)
     listener = ObjectBuilderParserListener(object_builder_params)
@@ -42,6 +46,10 @@ def loads(s,
 
 
 def load(filename, *args, **kwargs):
+    """
+    Does exactly the same as loads() but instead of a json string this function
+    receives the path to a file containing the json value.
+    """
     with open(filename) as f:
         json_str = f.read()
     return loads(json_str, *args, **kwargs)
@@ -82,6 +90,10 @@ def loads_config(s,
 
 
 def load_config(filename, *args, **kwargs):
+    """
+    Does exactly the same as loads_config() but instead of a json string this function
+    receives the path to a file containing the json value.
+    """
     with open(filename) as f:
         json_str = f.read()
     return loads_config(json_str, *args, **kwargs)

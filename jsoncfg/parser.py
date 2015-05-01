@@ -31,6 +31,8 @@ class TextParser(object):
 
     @property
     def column(self):
+        """ Returns the zero based column number based on the
+        current position of the parser. """
         # FIXME: Should we handle tab sizes? What tabsize to use?
         return self.pos - self.line_pos
 
@@ -40,6 +42,8 @@ class TextParser(object):
         self.end = len(text)
 
     def error(self, message):
+        """ Raises an exception with the given message and with the current position of
+        the parser in the parsed json string. """
         raise ParserException(self, message)
 
     def skip_chars(self, target_pos, is_char_skippable_func):
