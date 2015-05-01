@@ -8,14 +8,17 @@ from .tree_python import DefaultObjectCreator, DefaultArrayCreator, JSONValueCon
 from .tree_config import config_object_creator, config_array_creator, ConfigValueConverter
 
 
-def get_python_object_builder(object_creator=None,
-                              array_creator=None,
-                              value_converter=None):
-        return ObjectBuilderParams(
-            object_creator=DefaultObjectCreator() if object_creator is None else object_creator,
-            array_creator=DefaultArrayCreator() if array_creator is None else array_creator,
-            value_converter=JSONValueConverter() if value_converter is None else value_converter,
-        )
+def get_python_object_builder(**kwargs):
+    object_creator = kwargs.pop('object_creator', None)
+    array_creator = kwargs.pop('array_creator', None)
+    value_converter = kwargs.pop('value_converter', None)
+    if kwargs:
+        raise RuntimeError('Unexpected parameters: %s' % (kwargs,))
+    return ObjectBuilderParams(
+        object_creator=DefaultObjectCreator() if object_creator is None else object_creator,
+        array_creator=DefaultArrayCreator() if array_creator is None else array_creator,
+        value_converter=JSONValueConverter() if value_converter is None else value_converter,
+    )
 
 
 def loads(s,
