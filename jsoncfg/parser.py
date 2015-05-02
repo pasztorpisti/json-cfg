@@ -20,8 +20,9 @@ class TextParser(object):
     A base class for parsers. It handles the position in the parsed text and
     tracks the current line/column number.
     """
-    def __init__(self):
+    def __init__(self, tab_size=4):
         super(TextParser, self).__init__()
+        self.tab_size = tab_size
         self.text = None
         self.pos = 0
         self.end = 0
@@ -33,8 +34,14 @@ class TextParser(object):
     def column(self):
         """ Returns the zero based column number based on the
         current position of the parser. """
-        # FIXME: Should we handle tab sizes? What tabsize to use?
-        return self.pos - self.line_pos
+        col = 0
+        for i in my_xrange(self.line_pos, self.pos):
+            if self.text[i] == '\t':
+                col += self.tab_size
+                col -= col % self.tab_size
+            else:
+                col += 1
+        return col
 
     def init_text_parser(self, text):
         assert self.text is None
@@ -99,6 +106,7 @@ class TextParser(object):
 class JSONParserParams(object):
     def __init__(self, **params):
         """
+        :param tab_size: Used when calculating the column of the error location. Defaults to 4.
         :param root_is_array: True: the root of the json hierarchy must be an object/dict.
         False: the root of the json hierarchy must be an array/list.
         :param allow_comments: True: allow single/multi-line comments.
@@ -108,6 +116,7 @@ class JSONParserParams(object):
         item in json objects and arrays. Comes handy when you are exchanging lines in
         the config with copy pasting.
         """
+        self.tab_size = params.pop('tab_size', 4)
         self.root_is_array = params.pop('root_is_array', False)
         self.allow_comments = params.pop('allow_comments', True)
         self.allow_unquoted_keys = params.pop('allow_unquoted_keys', True)
@@ -129,7 +138,7 @@ class JSONParser(TextParser):
     spaces_and_special_chars = spaces | special_chars
 
     def __init__(self, params=JSONParserParams()):
-        super(JSONParser, self).__init__()
+        super(JSONParser, self).__init__(tab_size=params.tab_size)
         self.params = params
         self.listener = None
 

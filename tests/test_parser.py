@@ -90,6 +90,41 @@ class TestTextParser(TestCase):
                 line_pos = i + 1
             self.assertEqual(parser.line_pos, line_pos)
 
+    def test_column(self):
+        parser = TextParser(tab_size=4)
+        sequence = (
+            ('\t',  4),
+            (' ',   5),
+            ('\t',  8),
+            (' ',   9),
+            (' ',  10),
+            ('\t', 12),
+            (' ',  13),
+            (' ',  14),
+            (' ',  15),
+            ('\t', 16),
+            (' ',  17),
+            (' ',  18),
+            (' ',  19),
+            (' ',  20),
+            ('\t', 24),
+            ('\n',  0),
+            ('\t',  4),
+            (' ',   5),
+            ('\t',  8),
+            ('\r',  0),
+            ('\n',  0),
+            ('\t',  4),
+            (' ',   5),
+            ('\t',  8),
+        )
+        text, columns = zip(*sequence)
+        text = ''.join(text)
+        parser.init_text_parser(text)
+        for i, column in enumerate(columns):
+            parser.skip_to(i+1)
+            self.assertEqual(parser.column, column)
+
     def test_peek_from_middle_pos(self):
         parser = self._text_parser('abc')
         parser.skip_to(1)
