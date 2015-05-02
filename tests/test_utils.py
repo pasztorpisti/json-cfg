@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from jsoncfg.compatibility import python2
-from jsoncfg.utils import detect_encoding_and_remove_bom, decode_utf_text_buffer
+from jsoncfg.text_encoding import detect_encoding_and_remove_bom, decode_utf_text_buffer
 
 
 class TestEncodingFunctions(TestCase):

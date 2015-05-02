@@ -6,7 +6,7 @@ from .parser import JSONParserParams, JSONParser
 from .parser_listener import ObjectBuilderParserListener, ObjectBuilderParams
 from .tree_python import DefaultObjectCreator, DefaultArrayCreator, StringToScalarConverter
 from .tree_config import config_object_creator, config_array_creator, ConfigStringToScalarConverter
-from .utils import load_utf_text_file
+from .text_encoding import load_utf_text_file
 
 
 def get_python_object_builder_params(**kwargs):
