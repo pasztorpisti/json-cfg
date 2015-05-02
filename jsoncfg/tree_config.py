@@ -14,12 +14,12 @@ some other info).
 from .config_classes import ConfigJSONObject, ConfigJSONArray, ConfigJSONScalar
 
 
-def config_object_creator(listener):
+def config_object_creator(listener, path):
     obj = ConfigJSONObject(listener.parser.line, listener.parser.column)
     return obj, obj._insert
 
 
-def config_array_creator(listener):
+def config_array_creator(listener, path):
     array = ConfigJSONArray(listener.parser.line, listener.parser.column)
     return array, array._append
 
@@ -36,6 +36,6 @@ class ConfigStringToScalarConverter(object):
         """
         self.string_to_scalar_converter = string_to_scalar_converter
 
-    def __call__(self, listener, scalar_str, scalar_str_quoted):
-        scalar = self.string_to_scalar_converter(listener, scalar_str, scalar_str_quoted)
+    def __call__(self, listener, path, scalar_str, scalar_str_quoted):
+        scalar = self.string_to_scalar_converter(listener, path, scalar_str, scalar_str_quoted)
         return ConfigJSONScalar(scalar, listener.line, listener.column)

@@ -22,7 +22,7 @@ class DefaultObjectCreator(object):
         """
         self.dict_class = dict_class
 
-    def __call__(self, listener):
+    def __call__(self, listener, path):
         """
         :param listener: The parser listener that builds the python object hierarchy.
         As an example: the config parser uses listener.parser.line and listener.parser.column
@@ -43,7 +43,7 @@ class DefaultArrayCreator(object):
     def __init__(self, list_class=list):
         self.list_class = list_class
 
-    def __call__(self, listener):
+    def __call__(self, listener, path):
         """
         :param listener: The parser listener that builds the python object hierarchy.
         As an example: the config parser uses listener.parser.line and listener.parser.column
@@ -95,7 +95,7 @@ class StringToScalarConverter(object):
 
     _not_scalar_const_literal = object()
 
-    def __call__(self, listener, scalar_str, scalar_str_quoted):
+    def __call__(self, listener, path, scalar_str, scalar_str_quoted):
         """
         :return: After interpreting the string representation of the parsed scalar (scalar_str, and
         scalar_str_quoted) you have to convert it into a python object that will be inserted in the

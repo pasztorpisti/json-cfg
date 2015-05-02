@@ -43,9 +43,10 @@ class ObjectBuilderParserListener(ParserListener):
         self.params = params
 
         self._object_key = None
-        # The lambda function could actually be a None but that way we get a warning in
-        # self._new_value() that the insert_function isn't callable...
-        self._container_stack = [(None, None, lambda *args: None)]
+        # The fist item of the _container_stack could easily be (None, None, None). I'm using
+        # dummy values just to avoid false positive static code check warnings.
+        self._container_stack = [(self.ContainerType.none, [], lambda *args: None)]
+        self._path = []
         self._result = None
 
     @property
@@ -54,28 +55,44 @@ class ObjectBuilderParserListener(ParserListener):
         return self._result
 
     class ContainerType(object):
-        object = 0
-        array = 1
+        none = 0
+        object = 1
+        array = 2
 
     @property
     def _state(self):
         return self._container_stack[-1]
 
-    def _new_value(self, value):
-        container_type, _, insert_function = self._state
+    def _get_path_for_new_value(self):
+        container_type, container, _ = self._state
         if container_type == self.ContainerType.object:
+            assert self._object_key is not None
+            return self._path + [self._object_key]
+        elif container_type == self.ContainerType.array:
+            return self._path + [len(container)]
+        else:
+            return self._path[:]
+
+    def _new_value(self, value):
+        container_type, container, insert_function = self._state
+        if container_type == self.ContainerType.object:
+            assert self._object_key is not None
             insert_function(self._object_key, value)
+            self._path.append(self._object_key)
             self._object_key = None
         elif container_type == self.ContainerType.array:
+            self._path.append(len(container))
             insert_function(value)
 
     def _pop_container_stack(self):
         if len(self._container_stack) == 2:
             self._result = self._container_stack[-1][1]
         self._container_stack.pop()
+        if self._path:
+            self._path.pop()
 
     def begin_object(self):
-        obj, insert_function = self.params.object_creator(self)
+        obj, insert_function = self.params.object_creator(self, self._get_path_for_new_value())
         self._new_value(obj)
         self._container_stack.append((self.ContainerType.object, obj, insert_function))
 
@@ -88,7 +105,7 @@ class ObjectBuilderParserListener(ParserListener):
         self._object_key = key
 
     def begin_array(self):
-        arr, append_function = self.params.array_creator(self)
+        arr, append_function = self.params.array_creator(self, self._get_path_for_new_value())
         self._new_value(arr)
         self._container_stack.append((self.ContainerType.array, arr, append_function))
 
@@ -96,5 +113,6 @@ class ObjectBuilderParserListener(ParserListener):
         self._pop_container_stack()
 
     def scalar(self, scalar_str, scalar_str_quoted):
-        value = self.params.string_to_scalar_converter(self.parser, scalar_str, scalar_str_quoted)
+        value = self.params.string_to_scalar_converter(self.parser, self._get_path_for_new_value(),
+                                                       scalar_str, scalar_str_quoted)
         self._new_value(value)
