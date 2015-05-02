@@ -14,12 +14,12 @@ class JSONConfigQueryError(JSONConfigException):
     def __init__(self, config_node, message):
         """
         :param config_node: An instance of one of the subclasses of _ConfigNode.
-        You can use config_node.line and config_node.column to get the zero based
-        line and column number of the error location in the config file.
         """
-        message += ' [line=%s;col=%s]' % (config_node.line+1, config_node.column+1)
-        super(JSONConfigQueryError, self).__init__(message)
         self.config_node = config_node
+        self.line = config_node._line + 1
+        self.column = config_node._column + 1
+        message += ' [line=%s;col=%s]' % (self.line, self.column)
+        super(JSONConfigQueryError, self).__init__(message)
 
 
 class JSONConfigValueMapperError(JSONConfigQueryError):
@@ -138,8 +138,8 @@ class _ConfigNode(object):
         :param column: Zero based column number. (Add 1 for human readable error reporting).
         """
         super(_ConfigNode, self).__init__()
-        self.line = line
-        self.column = column
+        self._line = line
+        self._column = column
 
     def __call__(self, default=_undefined, mapper=_undefined_mapper):
         value = self._fetch_unwrapped_value()
@@ -172,7 +172,7 @@ class ConfigJSONScalar(_ConfigNode):
 
     def __repr__(self):
         return '%s(value=%r, line=%r, column=%r)' % (self.__class__.__name__,
-                                                     self.value, self.line, self.column)
+                                                     self.value, self._line, self._column)
 
     def _fetch_unwrapped_value(self):
         return self.value
@@ -202,7 +202,7 @@ class ConfigJSONObject(_ConfigNode):
 
     def __repr__(self):
         return '%s(len=%r, line=%r, column=%r)' % (self.__class__.__name__,
-                                                   len(self), self.line, self.column)
+                                                   len(self), self._line, self._column)
 
     def _fetch_unwrapped_value(self):
         return {key: node._fetch_unwrapped_value() for key, node in self._dict.items()}
@@ -235,7 +235,7 @@ class ConfigJSONArray(_ConfigNode):
 
     def __repr__(self):
         return '%s(len=%r, line=%r, column=%r)' % (self.__class__.__name__,
-                                                   len(self), self.line, self.column)
+                                                   len(self), self._line, self._column)
 
     def _fetch_unwrapped_value(self):
         return [node._fetch_unwrapped_value() for node in self._list]
