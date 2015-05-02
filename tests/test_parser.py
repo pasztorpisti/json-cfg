@@ -168,7 +168,8 @@ class TestJSONParser(TestCase):
         parser.parse(input_json, listener)
         self.assertEqual(listener.event_stream, expected_event_stream)
 
-    def _assert_raises_regexp(self, regexp, json_str, root_is_array=False, parser_params=JSONParserParams()):
+    def _assert_raises_regexp(self, regexp, json_str, root_is_array=False,
+                              parser_params=JSONParserParams()):
         parser_params.root_is_array = root_is_array
         listener = MyParserListener()
         parser = JSONParser(parser_params)
@@ -190,19 +191,23 @@ class TestJSONParser(TestCase):
         self._assert_raises_regexp('The json string should start with "\{"', 'x', False)
 
     def test_basic(self):
-        json_string = ' { cfg : asdf, "asdf" : [ 0 , null , /* comment */ [ ] ,\t\r\n // singleline\n { } ] , ggg : { } } '
+        json_string = ' { cfg : asdf, "asdf" : [ 0 , null , /* comment */ [ ] ,\t\r\n //'\
+                      ' singleline\n { } ] , ggg : { } } '
         expected_events = "{'cfg'u:'asdf'u'asdf'q:['0'u'null'u[]{}]'ggg'u:{}}"
         self._test_with_data(json_string, expected_events)
         self._test_with_data(json_string.replace(' ', ''), expected_events)
 
     def test_array_root(self):
-        self._test_with_data('[5,{},null,"ggg",[null,{}]]', "['5'u{}'null'u'ggg'q['null'u{}]]", True)
+        self._test_with_data('[5,{},null,"ggg",[null,{}]]', "['5'u{}'null'u'ggg'q['null'u{}]]",
+                             True)
 
     def test_trailing_commas(self):
         self._assert_raises_regexp(r'Trailing commas aren\'t enabled for this parser\.',
-                                   '{k:[null,]}', parser_params=JSONParserParams(allow_trailing_commas=False))
+                                   '{k:[null,]}',
+                                   parser_params=JSONParserParams(allow_trailing_commas=False))
         self._assert_raises_regexp(r'Trailing commas aren\'t enabled for this parser\.',
-                                   '{k:[null],}', parser_params=JSONParserParams(allow_trailing_commas=False))
+                                   '{k:[null],}',
+                                   parser_params=JSONParserParams(allow_trailing_commas=False))
         self._test_with_data('{k:[null,]}', "{'k'u:['null'u]}")
         self._test_with_data('{k:[null],}', "{'k'u:['null'u]}")
 
@@ -214,15 +219,16 @@ class TestJSONParser(TestCase):
     def test_comments(self):
         expected = "{'key'u:'null'u}"
         self._test_with_data('{key/**/:null}//', expected)
-        self._test_with_data('/*comment*///singleline\n{key://singleline\r//\nnull//singleline\n\r}', expected)
+        self._test_with_data('/*comment*///singleline\n{key://singleline\r//\nnull//'
+                             'singleline\n\r}', expected)
         self._test_with_data('///*\n{key:null}//', expected)
         self._test_with_data('/*//*/{key:null}//', expected)
         self._test_with_data('{key:null}//asdf', expected)
         self._assert_raises_regexp(r'Multiline comment isn\'t closed\.', '/*')
 
     def test_simple_string_escape_sequences(self):
-        self._test_with_data(r'["xxx\\\/\"\b\f\t\r\nyyy"]', '[' + repr('xxx\\/\"\b\f\t\r\nyyy') + 'q]',
-                             root_is_array=True)
+        self._test_with_data(r'["xxx\\\/\"\b\f\t\r\nyyy"]', '[' + repr('xxx\\/\"\b\f\t\r\nyyy') +
+                             'q]', root_is_array=True)
         self._assert_raises_regexp(r'Quoted string contains an invalid escape sequence\.',
                                    r'["\k"]', root_is_array=True)
 
@@ -271,12 +277,12 @@ class TestJSONParser(TestCase):
         ]
 
         for mask, decoded_python_string in cases:
-            #print('Mask: ' + bin(mask))
+            # print('Mask: ' + bin(mask))
             escaped_json_string = ''
             for bit in (0b1000, 0b0100, 0b0010, 0b0001):
                 escaped_json_string += r'\ud800' if bit & mask else r'\udc00'
             self._perform_surrogate_test(escaped_json_string, decoded_python_string)
 
     def test_control_character_in_quoted_string(self):
-        self._assert_raises_regexp(r'Encountered a control character that isn\'t allowed in quoted strings\.',
-                                   '["\n"]', root_is_array=True)
+        self._assert_raises_regexp(r'Encountered a control character that isn\'t allowed in'
+                                   ' quoted strings\.', '["\n"]', root_is_array=True)

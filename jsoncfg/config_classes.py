@@ -32,7 +32,8 @@ class JSONConfigValueMapperError(JSONConfigQueryError):
         :param mapper_exception: The exception instance that was raised during value conversion.
         It can be anything...
         """
-        super(JSONConfigValueMapperError, self).__init__(config_node, 'Error converting config value: ' +
+        super(JSONConfigValueMapperError, self).__init__(config_node,
+                                                         'Error converting config value: ' +
                                                          mapper_exception.message)
         self.mapper_exception = mapper_exception
 
@@ -61,8 +62,10 @@ class JSONConfigValueNotFoundError(JSONConfigQueryError):
                 path.append('.' + component)
         self.relative_path = ''.join(path)
         # TODO: improve the error message: it is possible to do so based on the info we have
-        message = 'Required config node not found. Missing query path: %s (relative to error location)' % self.relative_path
-        super(JSONConfigValueNotFoundError, self).__init__(value_not_found.parent_config_node, message)
+        message = 'Required config node not found. Missing query path: %s'\
+            '(relative to error location)' % self.relative_path
+        super(JSONConfigValueNotFoundError, self).__init__(value_not_found.parent_config_node,
+                                                           message)
 
 
 class JSONConfigNodeTypeError(JSONConfigQueryError):

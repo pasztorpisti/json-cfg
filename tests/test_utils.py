@@ -22,8 +22,10 @@ class TestEncodingFunctions(TestCase):
         self.assertEqual(decode_utf_text_buffer(b'\xef\xbb\xbfUTF', use_utf8_strings=False), u'UTF')
         if python2:
             # Testing use_utf8_strings=True/False with buf=utf8/utf16. -> 4 cases.
-            self.assertEqual(decode_utf_text_buffer(b'\xef\xbb\xbfUTF', use_utf8_strings=False), u'UTF')
-            self.assertEqual(decode_utf_text_buffer(b'\xef\xbb\xbfUTF', use_utf8_strings=True), b'UTF')
+            self.assertEqual(decode_utf_text_buffer(b'\xef\xbb\xbfUTF', use_utf8_strings=False),
+                             u'UTF')
+            self.assertEqual(decode_utf_text_buffer(b'\xef\xbb\xbfUTF', use_utf8_strings=True),
+                             b'UTF')
             self.assertEqual(decode_utf_text_buffer(b'\xff\xfe\0\0U\0\0\0T\0\0\0F\0\0\0',
                                                     use_utf8_strings=False), u'UTF')
             self.assertEqual(decode_utf_text_buffer(b'\xff\xfe\0\0U\0\0\0T\0\0\0F\0\0\0',

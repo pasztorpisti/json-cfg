@@ -14,16 +14,17 @@ class ObjectBuilderParams(object):
         return a tuple: (json_array, append_function).
         The returned json_array will be used as a json array (list) in the hierarchy returned by
         this loads() function. The append_function(item) will be used to add items.
-        :param value_converter: This is a callable with signature value_converter(listener, literal, literal_quoted).
-        While parsing this function receives every json value that is not an object or an array.
-        This includes quoted strings and all other non-quoted stuff (like the null, True, False literals
-        and numbers/strings). Note that literal is always a string and literal_quoted is a boolean that
-        indicates whether this string was quoted or not in the input json string. The parser interprets
-        every value as a quoted or nonquoted string. If literal_quoted is True then literal contains the
-        unescaped string value. If literal_quoted is False then it may contain "null", "True" false or
-        the string representation of anything else (eg: a number: "1.564") and it's up to you how to
-        interpret it. You can define your own literals if you want like interpreting "yes" and "no" as
-        boolean values.
+        :param value_converter: This is a callable with signature value_converter(listener, literal,
+        literal_quoted). While parsing, this function receives every json value that is not an
+        object or an array. This includes quoted strings and all other non-quoted stuff
+        (like the null, True, False literals and numbers/strings). Note that literal is always a
+        string and literal_quoted is a boolean that indicates whether this string was quoted or not
+        in the input json string. The parser interprets every value as a quoted or nonquoted string.
+        If literal_quoted is True then literal contains the unescaped string value. If
+        literal_quoted is False then it may contain "null", "True" false or the string
+        representation of anything else (eg: a number: "1.564") and it's up to you how tointerpret
+        it. You can define your own literals if you want like interpreting "yes" and "no" as boolean
+        values.
         In case of conversion error you should call listener.error() with an error message and this
         raises an exception with information about the error location, etc...
         """

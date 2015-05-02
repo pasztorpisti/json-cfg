@@ -97,8 +97,9 @@ class JSONValueConverter(object):
 
     def __call__(self, listener, literal, literal_quoted):
         """
-        :return: After interpreting the string representation of the parsed value (literal, and literal_quoted)
-        you have to return a processed value that will be inserted in the python object hierarchy.
+        :return: After interpreting the string representation of the parsed value (literal, and
+        literal_quoted) you have to return a processed value that will be inserted in the python
+        object hierarchy.
         """
         if literal_quoted:
             return literal

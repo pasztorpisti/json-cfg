@@ -87,8 +87,10 @@ class TextParser(object):
         return self.text[pos]
 
     def expect(self, c):
-        """ If the current position doesn't hold the specified c character then it raises an
-        exception, otherwise it skips the specified character (moves the current position forward). """
+        """
+        If the current position doesn't hold the specified c character then it raises an
+        exception, otherwise it skips the specified character (moves the current position forward).
+        """
         if self.peek() != c:
             self.error('Expected "%c"' % (c,))
         self.skip_char()
@@ -155,7 +157,8 @@ class JSONParser(TextParser):
                     self.error('The root of the json is expected to be an object!')
                 self._parse_array()
             else:
-                self.error('The json string should start with "%s"' % ('[' if self.params.root_is_array else '{'))
+                self.error('The json string should start with "%s"' % (
+                    '[' if self.params.root_is_array else '{'))
 
             if self._skip_spaces_and_peek() is not None:
                 self.error('Garbage detected after the parsed json!')
@@ -223,7 +226,8 @@ class JSONParser(TextParser):
                     self.listener.end_object()
                     break
 
-            key, key_quoted, pos_after_literal = self._parse_and_return_literal(self.params.allow_unquoted_keys)
+            key, key_quoted, pos_after_literal = self._parse_and_return_literal(
+                self.params.allow_unquoted_keys)
             self.listener.begin_object_item(key, key_quoted)
             # We step self.pos and self.line only after a successful call to the listener
             # because in case of an exception that is raised from the listener we want the
@@ -365,7 +369,8 @@ class JSONParser(TextParser):
                 else:
                     if 0xdc00 <= low_surrogate < 0xe000:
                         pos += 6
-                        codepoint = 0x10000 + (((codepoint - 0xd800) << 10) | (low_surrogate - 0xdc00))
+                        codepoint = 0x10000 + (((codepoint - 0xd800) << 10) |
+                                               (low_surrogate - 0xdc00))
             return codepoint, pos
 
     def _handle_escape(self, pos, c):

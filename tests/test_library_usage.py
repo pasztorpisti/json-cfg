@@ -27,7 +27,8 @@ class ServerConfigLoader(object):
     def _load_servers(self, servers_cfg):
         for server_cfg in servers_cfg:
             ensure_object(server_cfg)
-            self._log('%s|%s|%s' % (server_cfg.ip_address(), server_cfg.port(8000), server_cfg.wwwroot()))
+            self._log('%s|%s|%s' % (server_cfg.ip_address(), server_cfg.port(8000),
+                                    server_cfg.wwwroot()))
 
     def _load_users(self, users_cfg):
         for username, user_cfg in users_cfg:
