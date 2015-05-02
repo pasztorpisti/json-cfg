@@ -48,7 +48,7 @@ class JSONConfigValueNotFoundError(JSONConfigQueryError):
         :param value_not_found: A ValueNotFoundNode instance. Let's say that you query the
         config.servers[1].ip_address() value from the config but the config.servers array
         has only one item. In this case a JSONConfigValueNotFoundError is raised and
-        value_not_found.parent_config_node is set to config.servers (that is the last existing
+        value_not_found._parent_config_node is set to config.servers (that is the last existing
         component from our query path) and self.relative_path will be '[1].ip_address'.
         This way the error location points to the config.servers node and the error message
         says that you wanted to query it with the '[1].ip_address' relative_path that doesn't
@@ -57,7 +57,7 @@ class JSONConfigValueNotFoundError(JSONConfigQueryError):
         """
         self.value_not_found = value_not_found
         path = []
-        for component in value_not_found.missing_query_path:
+        for component in value_not_found._missing_query_path:
             if isinstance(component, numbers.Integral):
                 path.append('[%s]' % component)
             else:
@@ -65,8 +65,8 @@ class JSONConfigValueNotFoundError(JSONConfigQueryError):
         self.relative_path = ''.join(path)
         # TODO: improve the error message: it is possible to do so based on the info we have
         message = 'Required config node not found. Missing query path: %s'\
-            '(relative to error location)' % self.relative_path
-        super(JSONConfigValueNotFoundError, self).__init__(value_not_found.parent_config_node,
+            ' (relative to error location)' % self.relative_path
+        super(JSONConfigValueNotFoundError, self).__init__(value_not_found._parent_config_node,
                                                            message)
 
 
@@ -76,13 +76,18 @@ class JSONConfigNodeTypeError(JSONConfigQueryError):
     to be something else than its actual type. For example you are trying to iterate
     over the key-value pairs of a value that is not json object.
     """
-    def __init__(self, config_node, expected_type_name):
+    def __init__(self, config_node, expected_type, error_message=None):
         """
         :param config_node: An instance of one of the subclasses of _ConfigNode.
-        :param expected_type_name: It should be 'json_object', 'json_array' or 'json_scalar'.
+        :param expected_type: The expected type or a tuple/list of expected types.
         """
-        type_found = _config_node_type_names.get(config_node.__class__, 'unknown')
-        message = 'Expected a %s but found %s' % (expected_type_name, type_found)
+        found_type_name = config_node.__class__.__name__
+        if not isinstance(expected_type, (list, tuple)):
+            expected_type = (expected_type,)
+        expected_names = [t.__name__ for t in expected_type]
+        message = 'Expected a %s but found %s.' % (' or '.join(expected_names), found_type_name)
+        if error_message is not None:
+            message += ' %s' % (error_message,)
         super(JSONConfigNodeTypeError, self).__init__(config_node, message)
 
 
@@ -100,8 +105,8 @@ class ValueNotFoundNode(object):
         :param missing_query_path: The non-existing part (suffix) of the query path issued
         by the user. This is relative to parent_config_node.
         """
-        self.parent_config_node = parent_config_node
-        self.missing_query_path = missing_query_path
+        self._parent_config_node = parent_config_node
+        self._missing_query_path = missing_query_path
 
     def __call__(self, default=_undefined, mapper=_undefined_mapper):
         if default is _undefined:
@@ -112,7 +117,7 @@ class ValueNotFoundNode(object):
         return self.__getitem__(item)
 
     def __getitem__(self, item):
-        return ValueNotFoundNode(self.parent_config_node, self.missing_query_path + [item])
+        return ValueNotFoundNode(self._parent_config_node, self._missing_query_path + [item])
 
     def __len__(self):
         raise JSONConfigValueNotFoundError(self)
@@ -165,10 +170,18 @@ class ConfigJSONScalar(_ConfigNode):
         return ValueNotFoundNode(self, [index])
 
     def __len__(self):
-        raise JSONConfigValueNotFoundError(self)
+        raise JSONConfigNodeTypeError(
+            self,
+            (ConfigJSONObject, ConfigJSONArray),
+            'You are trying to get the length of a scalar value.'
+        )
 
     def __iter__(self):
-        raise JSONConfigValueNotFoundError(self)
+        raise JSONConfigNodeTypeError(
+            self,
+            (ConfigJSONObject, ConfigJSONArray),
+            'You are trying to iterate a scalar value.'
+        )
 
     def __repr__(self):
         return '%s(value=%r, line=%r, column=%r)' % (self.__class__.__name__,
@@ -244,11 +257,13 @@ class ConfigJSONArray(_ConfigNode):
         self._list.append(item)
 
 
-_config_node_type_names = {
-    ConfigJSONObject: 'json_object',
-    ConfigJSONArray: 'json_array',
-    ConfigJSONScalar: 'json_scalar',
-}
+def node_location(config_node):
+    if isinstance(config_node, _ConfigNode):
+        return config_node._line, config_node._column
+    if isinstance(config_node, ValueNotFoundNode):
+        raise JSONConfigValueNotFoundError(config_node)
+    raise ValueError('Expected a config node but received a %s instance.' %
+                     type(config_node).__name__)
 
 
 def node_exists(config_node):
@@ -281,8 +296,7 @@ def _guarantee_node_class(config_node, node_class):
     if isinstance(config_node, ValueNotFoundNode):
         raise JSONConfigValueNotFoundError(config_node)
     if isinstance(config_node, _ConfigNode):
-        type_name = _config_node_type_names.get(node_class, 'unknown')
-        raise JSONConfigNodeTypeError(config_node, type_name)
+        raise JSONConfigNodeTypeError(config_node, node_class)
     raise ValueError('Expected a %s or %s instance but received %s.' % (
         _ConfigNode.__name__, ValueNotFoundNode.__name__, config_node.__class__.__name__))
 
@@ -291,13 +305,13 @@ def ensure_exists(config_node):
     return _guarantee_node_class(config_node, _ConfigNode)
 
 
-def ensure_object(config_node):
+def expect_object(config_node):
     return _guarantee_node_class(config_node, ConfigJSONObject)
 
 
-def ensure_array(config_node):
+def expect_array(config_node):
     return _guarantee_node_class(config_node, ConfigJSONArray)
 
 
-def ensure_scalar(config_node):
+def expect_scalar(config_node):
     return _guarantee_node_class(config_node, ConfigJSONScalar)

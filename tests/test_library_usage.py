@@ -4,7 +4,7 @@ problematic input configs that should cause the expected errors.
 """
 
 from unittest import TestCase
-from jsoncfg import loads_config, ensure_object, ensure_array, JSONConfigNodeTypeError
+from jsoncfg import loads_config, expect_object, expect_array, JSONConfigNodeTypeError
 
 
 class ServerConfigLoader(object):
@@ -17,8 +17,8 @@ class ServerConfigLoader(object):
         self.cfg = loads_config(json_string)
 
     def __call__(self):
-        self._load_servers(ensure_array(self.cfg.servers))
-        self._load_users(ensure_object(self.cfg.users))
+        self._load_servers(expect_array(self.cfg.servers))
+        self._load_users(expect_object(self.cfg.users))
         return self.logs
 
     def _log(self, msg):
@@ -26,13 +26,13 @@ class ServerConfigLoader(object):
 
     def _load_servers(self, servers_cfg):
         for server_cfg in servers_cfg:
-            ensure_object(server_cfg)
+            expect_object(server_cfg)
             self._log('%s|%s|%s' % (server_cfg.ip_address(), server_cfg.port(8000),
                                     server_cfg.wwwroot()))
 
     def _load_users(self, users_cfg):
         for username, user_cfg in users_cfg:
-            ensure_object(user_cfg)
+            expect_object(user_cfg)
             self._log('%s|%s|%s' % (username, user_cfg.password(), user_cfg.is_admin(False)))
 
 
