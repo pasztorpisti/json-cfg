@@ -1,7 +1,7 @@
 from unittest import TestCase
-from jsoncfg import JSONConfigValueNotFoundError, JSONParserParams
 from jsoncfg.config_classes import ValueNotFoundNode, ConfigJSONScalar, ConfigJSONObject,\
     ConfigJSONArray, JSONConfigNodeTypeError
+from jsoncfg import JSONConfigValueNotFoundError, JSONParserParams
 from jsoncfg import loads_config, node_exists, node_is_object, node_is_array, node_is_scalar,\
     ensure_exists, expect_object, expect_array, expect_scalar
 
@@ -151,28 +151,25 @@ class TestUtilityFunctions(TestCase):
         config = loads_config('{}')
         self.assertIs(config, ensure_exists(config))
         self.assertRaises(JSONConfigValueNotFoundError, ensure_exists, config.a)
-        self.assertRaises(ValueError, ensure_exists, None)
+        self.assertRaises(TypeError, ensure_exists, None)
 
     def test_expect_object(self):
         config = loads_config('{a:0}')
         self.assertIs(config, expect_object(config))
         self.assertRaises(JSONConfigValueNotFoundError, expect_object, config.b)
         self.assertRaises(JSONConfigNodeTypeError, expect_object, config.a)
-        self.assertRaises(ValueError, expect_object, None)
+        self.assertRaises(TypeError, expect_object, None)
 
     def test_expect_array(self):
         config = self.loads_array_config('[0]')
         self.assertIs(config, expect_array(config))
         self.assertRaises(JSONConfigValueNotFoundError, expect_array, config[1])
         self.assertRaises(JSONConfigNodeTypeError, expect_array, config[0])
-        self.assertRaises(ValueError, expect_array, None)
+        self.assertRaises(TypeError, expect_array, None)
 
     def test_expect_scalar(self):
         config = self.loads_array_config('[0]')
         self.assertIs(config[0], expect_scalar(config[0]))
         self.assertRaises(JSONConfigValueNotFoundError, expect_scalar, config[1])
         self.assertRaises(JSONConfigNodeTypeError, expect_scalar, config)
-        self.assertRaises(ValueError, expect_scalar, None)
-
-
-# TODO: write tests for the mapper parameter of the query fetcher function call
+        self.assertRaises(TypeError, expect_scalar, None)

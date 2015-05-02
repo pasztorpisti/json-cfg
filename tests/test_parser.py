@@ -1,6 +1,6 @@
 from unittest import TestCase
 from jsoncfg.parser import TextParser, ParserException, ParserListener, JSONParser, JSONParserParams
-from jsoncfg.compatibility import unicode_str
+from jsoncfg.compatibility import my_unicode
 
 
 class TestTextParser(TestCase):
@@ -262,12 +262,12 @@ class TestJSONParser(TestCase):
                                    r'["\k"]', root_is_array=True)
 
     def test_unicode_escape_sequence(self):
-        self._test_with_data(unicode_str(r'["XXX\u1234\u5678WWW\u9abcYYY"]'),
+        self._test_with_data(my_unicode(r'["XXX\u1234\u5678WWW\u9abcYYY"]'),
                              u'[' + repr(u'XXX\u1234\u5678WWW\u9abcYYY') + u'q]',
                              root_is_array=True)
 
     def _perform_surrogate_test(self, escaped_json_string, decoded_python_string):
-        self._test_with_data(unicode_str('["' + escaped_json_string + '"]'),
+        self._test_with_data(my_unicode('["' + escaped_json_string + '"]'),
                              u'[' + repr(decoded_python_string) + u'q]',
                              root_is_array=True)
 

@@ -4,7 +4,6 @@ import numbers
 
 
 _undefined = object()
-_undefined_mapper = lambda v: v
 
 
 class JSONConfigQueryError(JSONConfigException):
@@ -16,8 +15,9 @@ class JSONConfigQueryError(JSONConfigException):
         :param config_node: An instance of one of the subclasses of _ConfigNode.
         """
         self.config_node = config_node
-        self.line = config_node._line + 1
-        self.column = config_node._column + 1
+        self.line, self.column = node_location(config_node)
+        self.line += 1
+        self.column += 1
         message += ' [line=%s;col=%s]' % (self.line, self.column)
         super(JSONConfigQueryError, self).__init__(message)
 
@@ -91,6 +91,39 @@ class JSONConfigNodeTypeError(JSONConfigQueryError):
         super(JSONConfigNodeTypeError, self).__init__(config_node, message)
 
 
+class JSONValueMapper(object):
+    def __call__(self, json_value):
+        raise NotImplementedError()
+
+
+def _process_value_fetcher_call_args(args):
+    """
+    This function processes the incoming varargs of ValueNotFoundNode.__call__() and
+    _ConfigNode.__call__().
+    :param args: A list or tuple containing positional function call arguments. The optional
+    arguments we expect are the following: An optional default value followed by zero or more
+    JSONValueMapper instances.
+    :return: (default_value, list_or_tuple_of_JSONValueMapper_instances)
+    The default_value is _undefined if it is not present and the second item of the tuple is
+    an empty tuple/list if there are not JSONValueMapper instances.
+    """
+    if not args:
+        return _undefined, ()
+
+    if isinstance(args[0], JSONValueMapper):
+        default = _undefined
+        mappers = args
+    else:
+        default = args[0]
+        mappers = args[1:]
+
+    for mapper in mappers:
+        if not isinstance(mapper, JSONValueMapper):
+            raise TypeError('%r in\'t a JSONValueMapper instance!' % (mapper,))
+
+    return default, mappers
+
+
 class ValueNotFoundNode(object):
     def __init__(self, parent_config_node, missing_query_path):
         """
@@ -108,7 +141,16 @@ class ValueNotFoundNode(object):
         self._parent_config_node = parent_config_node
         self._missing_query_path = missing_query_path
 
-    def __call__(self, default=_undefined, mapper=_undefined_mapper):
+    def __call__(self, *args):
+        """
+        This function expects the exact same parameters as _ConfigNode.__call__():
+        An optional default value followed by zero or more JSONValueMapper instances.
+        Since this is a not-found-node we know that this wrapper object doesn't contain any
+        json value so the mapper arguments are ignored.
+        If a default value is provided then we return it otherwise we raise an exception since
+        the user tries to fetch a required value that isn't in the config file.
+        """
+        default, mappers = _process_value_fetcher_call_args(args)
         if default is _undefined:
             raise JSONConfigValueNotFoundError(self)
         return default
@@ -146,10 +188,20 @@ class _ConfigNode(object):
         self._line = line
         self._column = column
 
-    def __call__(self, default=_undefined, mapper=_undefined_mapper):
+    def __call__(self, *args):
+        """
+        This function will fetch the wrapped json value from this wrapper config node.
+        We expect the following optional arguments:
+        An optional default value followed by zero or more JSONValueMapper instances.
+        Since this is not a not-found-node we know that there is a wrapped json value so the
+        default value is ignored. If we have JSONValueMapper instances then we apply them to
+        the wrapped json value in left-to-right order before returning the json value.
+        """
+        default, mappers = _process_value_fetcher_call_args(args)
         value = self._fetch_unwrapped_value()
         try:
-            value = mapper(value)
+            for mapper in mappers:
+                value = mapper(value)
         except Exception as e:
             raise JSONConfigValueMapperError(self, e)
         return value
@@ -262,8 +314,8 @@ def node_location(config_node):
         return config_node._line, config_node._column
     if isinstance(config_node, ValueNotFoundNode):
         raise JSONConfigValueNotFoundError(config_node)
-    raise ValueError('Expected a config node but received a %s instance.' %
-                     type(config_node).__name__)
+    raise TypeError('Expected a config node but received a %s instance.' %
+                    type(config_node).__name__)
 
 
 def node_exists(config_node):
@@ -297,7 +349,7 @@ def _guarantee_node_class(config_node, node_class):
         raise JSONConfigValueNotFoundError(config_node)
     if isinstance(config_node, _ConfigNode):
         raise JSONConfigNodeTypeError(config_node, node_class)
-    raise ValueError('Expected a %s or %s instance but received %s.' % (
+    raise TypeError('Expected a %s or %s instance but received %s.' % (
         _ConfigNode.__name__, ValueNotFoundNode.__name__, config_node.__class__.__name__))
 
 

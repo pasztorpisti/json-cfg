@@ -2,7 +2,7 @@
 This file contains the JSON parser that works like a SAX XML parser.
 """
 
-from .compatibility import my_xrange, my_unichr, utf8chr, is_unicode
+from .compatibility import my_xrange, my_unichr, my_unicode, utf8chr
 from .exceptions import JSONConfigException
 
 
@@ -329,7 +329,7 @@ class JSONParser(TextParser):
         result = []
         pos = self.pos + 1
         segment_begin = pos
-        my_chr = my_unichr if is_unicode(self.text) else utf8chr
+        my_chr = my_unichr if isinstance(self.text, my_unicode) else utf8chr
         while pos < self.end:
             c = self.text[pos]
             if c < ' ' and c != '\t':

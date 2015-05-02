@@ -12,20 +12,16 @@ python2 = sys.version_info[0] == 2
 if python2:
     my_xrange = xrange
     my_unichr = unichr
-    unicode_str = unicode
-
-    def is_unicode(s):
-        return isinstance(s, unicode)
+    my_unicode = unicode
+    my_basestring = basestring
 
     def utf8chr(code_point):
         return unichr(code_point).encode('utf-8')
 else:
     my_xrange = range
     my_unichr = chr
-    unicode_str = str
-
-    def is_unicode(s):
-        return isinstance(s, str)
+    my_unicode = str
+    my_basestring = str
 
     # This is here just to satisfy import statements.
     def utf8chr(_):
