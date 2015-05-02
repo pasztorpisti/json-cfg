@@ -27,21 +27,22 @@ class TextParser(object):
         self.pos = 0
         self.end = 0
         self.line = 0
-        self.line_pos = 0
         self.prev_newline_char = None
+        self._column = 0
+        self._column_query_pos = 0
 
     @property
     def column(self):
         """ Returns the zero based column number based on the
         current position of the parser. """
-        col = 0
-        for i in my_xrange(self.line_pos, self.pos):
+        for i in my_xrange(self._column_query_pos, self.pos):
             if self.text[i] == '\t':
-                col += self.tab_size
-                col -= col % self.tab_size
+                self._column += self.tab_size
+                self._column -= self._column % self.tab_size
             else:
-                col += 1
-        return col
+                self._column += 1
+        self._column_query_pos = self.pos
+        return self._column
 
     def init_text_parser(self, text):
         assert self.text is None
@@ -64,11 +65,11 @@ class TextParser(object):
                 if self.prev_newline_char is not None and self.prev_newline_char != c:
                     # this is the second char of a CRLF or LFCR
                     self.prev_newline_char = None
-                    self.line_pos += 1
                 else:
                     self.prev_newline_char = c
                     self.line += 1
-                    self.line_pos = self.pos + 1
+                self._column_query_pos = self.pos + 1
+                self._column = 0
             else:
                 self.prev_newline_char = None
         else:

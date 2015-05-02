@@ -22,13 +22,11 @@ class TestTextParser(TestCase):
         self.assertEqual(parser.pos, 0)
         self.assertEqual(parser.end, 3)
         self.assertEqual(parser.line, 0)
-        self.assertEqual(parser.line_pos, 0)
 
     def test_skip_chars_all(self):
-        LEN = 5
-        parser = self._text_parser(' ' * LEN)
+        parser = self._text_parser(' ' * 5)
         parser.skip_chars(parser.end, self._skipper(' '))
-        self.assertEqual(parser.pos, LEN)
+        self.assertEqual(parser.pos, 5)
 
     def test_skip_chars_none(self):
         parser = self._text_parser('abc')
@@ -82,13 +80,9 @@ class TestTextParser(TestCase):
         text, lines = zip(*sequence)
         text = ''.join(text)
         parser = self._text_parser(text)
-        line_pos = 0
         for i, line in enumerate(lines):
             parser.skip_to(i+1)
             self.assertEqual(parser.line, line)
-            if text[i] != ' ':
-                line_pos = i + 1
-            self.assertEqual(parser.line_pos, line_pos)
 
     def test_column(self):
         parser = TextParser(tab_size=4)
