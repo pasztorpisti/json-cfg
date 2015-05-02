@@ -6,6 +6,7 @@ from .parser import JSONParserParams, JSONParser
 from .parser_listener import ObjectBuilderParserListener, ObjectBuilderParams
 from .tree_python import DefaultObjectCreator, DefaultArrayCreator, JSONValueConverter
 from .tree_config import config_object_creator, config_array_creator, ConfigValueConverter
+from .utils import load_utf_text_file
 
 
 def get_python_object_builder_params(**kwargs):
@@ -49,9 +50,17 @@ def load(filename, *args, **kwargs):
     """
     Does exactly the same as loads() but instead of a json string this function
     receives the path to a file containing the json value.
+    :param default_encoding: The encoding to be used if the file doesn't have a BOM prefix.
+    Defaults to UTF-8.
+    :param use_utf8_strings: Ignored in case of python3, in case of python2 the default
+    value of this is True. True means that the loaded json string should be handled as a utf-8
+    encoded str instead of a unicode object.
     """
-    with open(filename) as f:
-        json_str = f.read()
+    json_str = load_utf_text_file(
+        filename,
+        default_encoding=kwargs.pop('default_encoding', 'UTF-8'),
+        use_utf8_strings=kwargs.pop('use_utf8_strings', True),
+    )
     return loads(json_str, *args, **kwargs)
 
 
@@ -93,7 +102,15 @@ def load_config(filename, *args, **kwargs):
     """
     Does exactly the same as loads_config() but instead of a json string this function
     receives the path to a file containing the json value.
+    :param default_encoding: The encoding to be used if the file doesn't have a BOM prefix.
+    Defaults to UTF-8.
+    :param use_utf8_strings: Ignored in case of python3, in case of python2 the default
+    value of this is True. True means that the loaded json string should be handled as a utf-8
+    encoded str instead of a unicode object.
     """
-    with open(filename) as f:
-        json_str = f.read()
+    json_str = load_utf_text_file(
+        filename,
+        default_encoding=kwargs.pop('default_encoding', 'UTF-8'),
+        use_utf8_strings=kwargs.pop('use_utf8_strings', True),
+    )
     return loads_config(json_str, *args, **kwargs)
