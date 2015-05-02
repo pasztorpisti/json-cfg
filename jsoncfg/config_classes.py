@@ -150,7 +150,7 @@ class ValueNotFoundNode(object):
         If a default value is provided then we return it otherwise we raise an exception since
         the user tries to fetch a required value that isn't in the config file.
         """
-        default, mappers = _process_value_fetcher_call_args(args)
+        default, _ = _process_value_fetcher_call_args(args)
         if default is _undefined:
             raise JSONConfigValueNotFoundError(self)
         return default
@@ -197,7 +197,7 @@ class _ConfigNode(object):
         default value is ignored. If we have JSONValueMapper instances then we apply them to
         the wrapped json value in left-to-right order before returning the json value.
         """
-        default, mappers = _process_value_fetcher_call_args(args)
+        _, mappers = _process_value_fetcher_call_args(args)
         value = self._fetch_unwrapped_value()
         try:
             for mapper in mappers:
