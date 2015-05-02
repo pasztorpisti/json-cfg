@@ -2,7 +2,7 @@ from .parser import ParserListener
 
 
 class ObjectBuilderParams(object):
-    def __init__(self, object_creator, array_creator, value_converter):
+    def __init__(self, object_creator, array_creator, string_to_scalar_converter):
         """
         :param object_creator: A callable with signature object_creator(listener) that has to
         return a tuple: (json_object, insert_function). You can access line/column information
@@ -14,28 +14,30 @@ class ObjectBuilderParams(object):
         return a tuple: (json_array, append_function).
         The returned json_array will be used as a json array (list) in the hierarchy returned by
         this loads() function. The append_function(item) will be used to add items.
-        :param value_converter: This is a callable with signature value_converter(listener, literal,
-        literal_quoted). While parsing, this function receives every json value that is not an
+        :param string_to_scalar_converter: This is a callable with signature
+        string_to_scalar_converter(listener, scalar_str, scalar_str_quoted).
+        While parsing, this function receives every json value that is not an
         object or an array. This includes quoted strings and all other non-quoted stuff
-        (like the null, True, False literals and numbers/strings). Note that literal is always a
-        string and literal_quoted is a boolean that indicates whether this string was quoted or not
-        in the input json string. The parser interprets every value as a quoted or nonquoted string.
-        If literal_quoted is True then literal contains the unescaped string value. If
-        literal_quoted is False then it may contain "null", "True" false or the string
-        representation of anything else (eg: a number: "1.564") and it's up to you how tointerpret
-        it. You can define your own literals if you want like interpreting "yes" and "no" as boolean
-        values.
+        (like the null, True, False literals and numbers/strings). Note that scalar_str is always a
+        string and scalar_str_quoted is a boolean that indicates whether scalar_str  was quoted or
+        not in the input json string. The parser interprets every scalar as a quoted or non-quoted
+        string.
+        If scalar_str_quoted is True then scalar_str contains the unescaped string. If
+        scalar_str_quoted is False then it may contain "null", "True" false or the string
+        representation of anything else (eg: a number: "1.564") and it's up to you how to interpret
+        it. You can define your own constant scalar literals if you want like interpreting
+        the unquoted "yes" and "no" literals as boolean values.
         In case of conversion error you should call listener.error() with an error message and this
         raises an exception with information about the error location, etc...
         """
         self.object_creator = object_creator
         self.array_creator = array_creator
-        self.value_converter = value_converter
+        self.string_to_scalar_converter = string_to_scalar_converter
 
 
 class ObjectBuilderParserListener(ParserListener):
     """ A configurable parser listener implementation that can be configured to
-    build a json tree using the user supplied object/array/value factories. """
+    build a json tree using the user supplied object/array factories and scalar converter. """
     def __init__(self, params):
         super(ObjectBuilderParserListener, self).__init__()
         self.params = params
@@ -93,6 +95,6 @@ class ObjectBuilderParserListener(ParserListener):
     def end_array(self):
         self._pop_container_stack()
 
-    def literal(self, literal, literal_quoted):
-        value = self.params.value_converter(self.parser, literal, literal_quoted)
+    def scalar(self, scalar_str, scalar_str_quoted):
+        value = self.params.string_to_scalar_converter(self.parser, scalar_str, scalar_str_quoted)
         self._new_value(value)

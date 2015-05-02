@@ -236,13 +236,13 @@ class JSONParser(TextParser):
                     self.listener.end_object()
                     break
 
-            key, key_quoted, pos_after_literal = self._parse_and_return_literal(
+            key, key_quoted, pos_after_key = self._parse_and_return_string(
                 self.params.allow_unquoted_keys)
             self.listener.begin_object_item(key, key_quoted)
             # We step self.pos and self.line only after a successful call to the listener
             # because in case of an exception that is raised from the listener we want the
-            # line/column number to point to the beginning of the parsed literal.
-            self.skip_to(pos_after_literal)
+            # line/column number to point to the beginning of the parsed string.
+            self.skip_to(pos_after_key)
 
             c = self._skip_spaces_and_peek()
             if c != ':':
@@ -286,29 +286,29 @@ class JSONParser(TextParser):
         elif c == '[':
             self._parse_array()
         else:
-            self._parse_literal()
+            self._parse_scalar()
 
-    def _parse_literal(self):
-        literal, quoted, pos_after_literal = self._parse_and_return_literal(True)
-        self.listener.literal(literal, quoted)
-        self.skip_to(pos_after_literal)
+    def _parse_scalar(self):
+        scalar_str, scalar_str_quoted, pos_after_scalar = self._parse_and_return_string(True)
+        self.listener.scalar(scalar_str, scalar_str_quoted)
+        self.skip_to(pos_after_scalar)
 
-    def _parse_and_return_literal(self, allow_unquoted):
+    def _parse_and_return_string(self, allow_unquoted):
         c = self._skip_spaces_and_peek()
         quoted = c == '"'
         if not quoted and not allow_unquoted:
             self.error('Unquoted keys arn\'t allowed.')
 
         if quoted:
-            return self._parse_and_return_quoted_literal()
-        return self._parse_and_return_unquoted_literal()
+            return self._parse_and_return_quoted_string()
+        return self._parse_and_return_unquoted_string()
 
-    def _parse_and_return_unquoted_literal(self):
+    def _parse_and_return_unquoted_string(self):
         """
-        Parses a literal that has no quotation marks so it doesn't
+        Parses a string that has no quotation marks so it doesn't
         contain any special characters and we don't have to interpret
         any escape sequences.
-        :return: (literal, quoted=False, end_of_literal_pos)
+        :return: (string, quoted=False, end_of_string_pos)
         """
         begin = self.pos
         for end in my_xrange(self.pos, self.end):
@@ -317,14 +317,14 @@ class JSONParser(TextParser):
         else:
             end = self.end
         if begin == end:
-            self.error('Expected a literal here.')
+            self.error('Expected a scalar here.')
         return self.text[begin:end], False, end
 
-    def _parse_and_return_quoted_literal(self):
+    def _parse_and_return_quoted_string(self):
         """
-        Parses a literal that has quotation marks so it may contain
+        Parses a string that has quotation marks so it may contain
         special characters and escape sequences.
-        :return: (unescaped_literal, quoted=True, end_of_literal_pos)
+        :return: (unescaped_string, quoted=True, end_of_string_pos)
         """
         result = []
         pos = self.pos + 1
@@ -348,8 +348,8 @@ class JSONParser(TextParser):
                     self.error('Reached the end of stream while parsing quoted string.')
                 c = self.text[pos]
                 if c == 'u':
-                    codepoint, pos = self._handle_unicode_escape(pos)
-                    result.append(my_chr(codepoint))
+                    code_point, pos = self._handle_unicode_escape(pos)
+                    result.append(my_chr(code_point))
                 else:
                     char, pos = self._handle_escape(pos, c)
                     result.append(char)
@@ -363,13 +363,13 @@ class JSONParser(TextParser):
             self.error('Reached the end of stream while parsing quoted string.')
         pos += 1
         try:
-            codepoint = int(self.text[pos:pos+4], 16)
+            code_point = int(self.text[pos:pos+4], 16)
         except ValueError:
             self.skip_to(pos - 2)
             self.error('Error decoding unicode escape sequence.')
         else:
             pos += 4
-            if 0xd800 <= codepoint < 0xdc00 and self.end-pos >= 6 and\
+            if 0xd800 <= code_point < 0xdc00 and self.end-pos >= 6 and\
                     self.text[pos] == '\\' and self.text[pos+1] == 'u':
                 try:
                     low_surrogate = int(self.text[pos+2:pos+6], 16)
@@ -379,9 +379,9 @@ class JSONParser(TextParser):
                 else:
                     if 0xdc00 <= low_surrogate < 0xe000:
                         pos += 6
-                        codepoint = 0x10000 + (((codepoint - 0xd800) << 10) |
+                        code_point = 0x10000 + (((code_point - 0xd800) << 10) |
                                                (low_surrogate - 0xdc00))
-            return codepoint, pos
+            return code_point, pos
 
     def _handle_escape(self, pos, c):
         char = {
@@ -430,5 +430,5 @@ class ParserListener(object):
     def end_array(self):
         raise NotImplementedError()
 
-    def literal(self, literal, literal_quoted):
+    def scalar(self, scalar, scalar_quoted):
         raise NotImplementedError()

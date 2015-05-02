@@ -36,9 +36,9 @@ class TestLoads(TestCase):
         lst = loads("[0, 1, 2]", JSONParserParams(root_is_array=True))
         self.assertListEqual(lst, [0, 1, 2])
 
-    def test_invalid_literal(self):
-        self.assertRaisesRegexp(ParserException, 'Invalid json literal: "invalid_literal"',
-                                loads, '{key:invalid_literal}')
+    def test_invalid_json_scalar(self):
+        self.assertRaisesRegexp(ParserException, 'Invalid json scalar: "invalid_scalar"',
+                                loads, '{key:invalid_scalar}')
 
     def test_duplicate_key(self):
         self.assertRaisesRegexp(ParserException, 'Duplicate key: "my_duplicate_key"',
@@ -54,9 +54,9 @@ class TestLoadsConfig(TestCase):
         lst = loads_config("[0, 1, 2]", JSONParserParams(root_is_array=True))
         self.assertListEqual(lst(), [0, 1, 2])
 
-    def test_invalid_literal(self):
-        self.assertRaisesRegexp(ParserException, 'Invalid json literal: "invalid_literal"',
-                                loads_config, '{key:invalid_literal}')
+    def test_invalid_json_scalar(self):
+        self.assertRaisesRegexp(ParserException, 'Invalid json scalar: "invalid_scalar"',
+                                loads_config, '{key:invalid_scalar}')
 
     def test_duplicate_key(self):
         self.assertRaisesRegexp(ParserException, 'Duplicate key: "my_duplicate_key"',

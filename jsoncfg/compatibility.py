@@ -17,8 +17,8 @@ if python2:
     def is_unicode(s):
         return isinstance(s, unicode)
 
-    def utf8chr(codepoint):
-        return unichr(codepoint).encode('utf-8')
+    def utf8chr(code_point):
+        return unichr(code_point).encode('utf-8')
 else:
     my_xrange = range
     my_unichr = chr

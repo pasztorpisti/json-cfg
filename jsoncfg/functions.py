@@ -4,8 +4,8 @@ Contains the load functions that we use as the public interface of this whole li
 
 from .parser import JSONParserParams, JSONParser
 from .parser_listener import ObjectBuilderParserListener, ObjectBuilderParams
-from .tree_python import DefaultObjectCreator, DefaultArrayCreator, JSONValueConverter
-from .tree_config import config_object_creator, config_array_creator, ConfigValueConverter
+from .tree_python import DefaultObjectCreator, DefaultArrayCreator, StringToScalarConverter
+from .tree_config import config_object_creator, config_array_creator, ConfigStringToScalarConverter
 from .utils import load_utf_text_file
 
 
@@ -17,13 +17,14 @@ def get_python_object_builder_params(**kwargs):
     """
     object_creator = kwargs.pop('object_creator', None)
     array_creator = kwargs.pop('array_creator', None)
-    value_converter = kwargs.pop('value_converter', None)
+    string_to_scalar_converter = kwargs.pop('string_to_scalar_converter', None)
     if kwargs:
         raise RuntimeError('Unexpected parameters: %s' % (kwargs,))
     return ObjectBuilderParams(
         object_creator=DefaultObjectCreator() if object_creator is None else object_creator,
         array_creator=DefaultArrayCreator() if array_creator is None else array_creator,
-        value_converter=JSONValueConverter() if value_converter is None else value_converter,
+        string_to_scalar_converter=StringToScalarConverter() if string_to_scalar_converter is None
+        else string_to_scalar_converter,
     )
 
 
@@ -49,7 +50,7 @@ def loads(s,
 def load(filename, *args, **kwargs):
     """
     Does exactly the same as loads() but instead of a json string this function
-    receives the path to a file containing the json value.
+    receives the path to a file containing the json string.
     :param default_encoding: The encoding to be used if the file doesn't have a BOM prefix.
     Defaults to UTF-8.
     :param use_utf8_strings: Ignored in case of python3, in case of python2 the default
@@ -66,10 +67,10 @@ def load(filename, *args, **kwargs):
 
 def loads_config(s,
                  parser_params=JSONParserParams(),
-                 value_converter=JSONValueConverter()):
+                 string_to_scalar_converter=StringToScalarConverter()):
     """
     Works similar to the loads() function but this one returns a json object hierarchy
-    that wraps all json objects, arrays and values to provide a nice config query syntax.
+    that wraps all json objects, arrays and scalars to provide a nice config query syntax.
     For example:
     my_config = loads_config(json_string)
     ip_address = my_config.servers.reverse_proxy.ip_address()
@@ -91,7 +92,7 @@ def loads_config(s,
     object_builder_params = ObjectBuilderParams(
         object_creator=config_object_creator,
         array_creator=config_array_creator,
-        value_converter=ConfigValueConverter(value_converter),
+        string_to_scalar_converter=ConfigStringToScalarConverter(string_to_scalar_converter),
     )
     listener = ObjectBuilderParserListener(object_builder_params)
     parser.parse(s, listener)
@@ -101,7 +102,7 @@ def loads_config(s,
 def load_config(filename, *args, **kwargs):
     """
     Does exactly the same as loads_config() but instead of a json string this function
-    receives the path to a file containing the json value.
+    receives the path to a file containing the json string.
     :param default_encoding: The encoding to be used if the file doesn't have a BOM prefix.
     Defaults to UTF-8.
     :param use_utf8_strings: Ignored in case of python3, in case of python2 the default

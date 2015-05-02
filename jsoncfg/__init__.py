@@ -4,24 +4,24 @@ from .exceptions import JSONConfigException
 from .parser import ParserException
 from .config_classes import JSONConfigQueryError, JSONConfigValueMapperError,\
     JSONConfigValueNotFoundError, JSONConfigNodeTypeError,\
-    node_exists, node_is_object, node_is_array, node_is_value,\
-    ensure_exists, ensure_object, ensure_array, ensure_value
+    node_exists, node_is_object, node_is_array, node_is_scalar,\
+    ensure_exists, ensure_object, ensure_array, ensure_scalar
 from .functions import loads, load, loads_config, load_config, get_python_object_builder_params,\
     JSONParserParams, ObjectBuilderParams
 from .tree_python import DefaultObjectCreator, DefaultArrayCreator, default_number_converter,\
-    JSONValueConverter
+    StringToScalarConverter
 
 __all__ = [
     'JSONConfigException',
     'ParserException',
     'JSONConfigQueryError', 'JSONConfigValueMapperError',
     'JSONConfigValueNotFoundError', 'JSONConfigNodeTypeError',
-    'node_exists', 'node_is_object', 'node_is_array', 'node_is_value',
-    'ensure_exists', 'ensure_object', 'ensure_array', 'ensure_value',
+    'node_exists', 'node_is_object', 'node_is_array', 'node_is_scalar',
+    'ensure_exists', 'ensure_object', 'ensure_array', 'ensure_scalar',
     'loads', 'load', 'loads_config', 'load_config', 'get_python_object_builder_params',
     'JSONParserParams', 'ObjectBuilderParams',
     'DefaultObjectCreator', 'DefaultArrayCreator', 'default_number_converter',
-    'JSONValueConverter',
+    'StringToScalarConverter',
 ]
 
 # version_info[0]: Increase in case of large milestones/releases.

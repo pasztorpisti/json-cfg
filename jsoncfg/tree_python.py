@@ -67,47 +67,47 @@ def default_number_converter(number_str):
     return int(number_str) if is_int else float(number_str)
 
 
-class JSONValueConverter(object):
+class StringToScalarConverter(object):
     """
-    A callable that converts the string representation of json values into python objects.
-    The JSONParser works only with quoted and quoteless strings, it doesn't interpret different
-    types of json values like bool, null, number, string. It is the responsibility of this
-    callable to convert the string values (emitted by the parser) into their python equivalent.
+    A callable that converts the string representation of json scalars into python objects.
+    The JSONParser works only with quoted and non-quoted strings, it doesn't interpret different
+    types of json scalars like bool, null, number, string. It is the responsibility of this
+    callable to convert the strings (emitted by the parser) into their python equivalent.
     """
     def __init__(self,
                  number_converter=default_number_converter,
-                 json_literals=None):
+                 scalar_const_literals=None):
         """
 
         :param number_converter: This number converter will be called with every non-quoted
-        string that isn't present in the dictionary passed to the json_literals parameter.
-        :param json_literals: A dictionary that maps non-quoted json values to any user
-        supplied objects. If you don't supply this parameter then the default dictionary
+        string that isn't present in the dictionary passed to the scalar_const_literals parameter.
+        :param scalar_const_literals: A dictionary that maps non-quoted string representation of
+        json scalars to any user supplied python objects.
+        If you don't supply this parameter then the default dictionary
         that will be used is {'null': None, 'true': True, 'false': False}. Note that
         you can use this parameter to easily define your own "constants" in the json file.
-        :return:
         """
         self.number_converter = number_converter
-        if json_literals is None:
-            self.json_literals = {'null': None, 'true': True, 'false': False}
+        if scalar_const_literals is None:
+            self.scalar_const_literals = {'null': None, 'true': True, 'false': False}
         else:
-            self.json_literals = json_literals
+            self.scalar_const_literals = scalar_const_literals
 
-    _literal_not_found = object()
+    _not_scalar_const_literal = object()
 
-    def __call__(self, listener, literal, literal_quoted):
+    def __call__(self, listener, scalar_str, scalar_str_quoted):
         """
-        :return: After interpreting the string representation of the parsed value (literal, and
-        literal_quoted) you have to return a processed value that will be inserted in the python
+        :return: After interpreting the string representation of the parsed scalar (scalar_str, and
+        scalar_str_quoted) you have to convert it into a python object that will be inserted in the
         object hierarchy.
         """
-        if literal_quoted:
-            return literal
+        if scalar_str_quoted:
+            return scalar_str
 
-        value = self.json_literals.get(literal, self._literal_not_found)
-        if value is self._literal_not_found:
+        value = self.scalar_const_literals.get(scalar_str, self._not_scalar_const_literal)
+        if value is self._not_scalar_const_literal:
             try:
-                value = self.number_converter(literal)
+                value = self.number_converter(scalar_str)
             except ValueError:
-                listener.error('Invalid json literal: "%s"' % (literal,))
+                listener.error('Invalid json scalar: "%s"' % (scalar_str,))
         return value

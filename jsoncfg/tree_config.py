@@ -11,7 +11,7 @@ some other info).
 """
 
 
-from .config_classes import ConfigJSONObject, ConfigJSONArray, ConfigJSONValue
+from .config_classes import ConfigJSONObject, ConfigJSONArray, ConfigJSONScalar
 
 
 def config_object_creator(listener):
@@ -24,18 +24,18 @@ def config_array_creator(listener):
     return array, array._append
 
 
-class ConfigValueConverter(object):
+class ConfigStringToScalarConverter(object):
     """
-    A factory that converts the string representation of a json value into its python object
+    A factory that converts the string representation of a json scalar into its python object
     equivalent and then returns it wrapped into a config node.
     """
-    def __init__(self, value_converter):
+    def __init__(self, string_to_scalar_converter):
         """
-        :param value_converter: A callable that converts the string representation of json
-        values into their python object equivalent.
+        :param string_to_scalar_converter: A callable that converts the string representation of
+        scalars into their python object equivalent.
         """
-        self.value_converter = value_converter
+        self.string_to_scalar_converter = string_to_scalar_converter
 
-    def __call__(self, listener, literal, literal_quoted):
-        value = self.value_converter(listener, literal, literal_quoted)
-        return ConfigJSONValue(value, listener.line, listener.column)
+    def __call__(self, listener, scalar_str, scalar_str_quoted):
+        scalar = self.string_to_scalar_converter(listener, scalar_str, scalar_str_quoted)
+        return ConfigJSONScalar(scalar, listener.line, listener.column)

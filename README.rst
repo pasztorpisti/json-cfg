@@ -33,7 +33,9 @@ the following extras compared to the standard json.loads():
 - A larger subset of javascript (and not some weird/exotic extension to json that
   would turn json into something that has nothing to do with json/javascript):
 
-    - single and multi-line comments
+    - single and multi-line comments - this is more useful then you would think:
+      it is good not only for documentation but also for temporarily disabling
+      a block in your config without actually deleting entries
     - object (dictionary) keys without quotes
     - trailing commas (allowing commas after the last item of objects and arrays)
 
@@ -48,7 +50,9 @@ the following extras compared to the standard json.loads():
 Config file examples
 --------------------
 
-*Hint: use javascript syntax highlight in your text editor for json config files whenever possible - this makes reading config files much easier especially when you have a lot of comments or large commented config blocks.*
+*Hint: use javascript syntax highlight in your text editor for json config files
+ whenever possible - this makes reading config files much easier especially when you
+ have a lot of comments or large commented config blocks.*
 
 **A traditional json config file:**
 
@@ -68,12 +72,12 @@ Config file examples
         "superusername": "tron"
     }
 
-**The same with json-cfg:**
+**Something similar with json-cfg:**
 
 .. code:: javascript
     
     {
-        // Note that we could get rid of most quotation marks.
+        // Note that we can get rid of most quotation marks.
         servers: [
             {
                 ip_address: "127.0.0.1",

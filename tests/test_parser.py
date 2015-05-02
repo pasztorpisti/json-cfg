@@ -185,9 +185,9 @@ class MyParserListener(ParserListener):
     def end_array(self):
         self.events.append(']')
 
-    def literal(self, literal, literal_quoted):
-        self.events.append(repr(literal))
-        self.events.append('q' if literal_quoted else 'u')
+    def scalar(self, scalar_str, scalar_str_quoted):
+        self.events.append(repr(scalar_str))
+        self.events.append('q' if scalar_str_quoted else 'u')
 
 
 class TestJSONParser(TestCase):
@@ -271,7 +271,7 @@ class TestJSONParser(TestCase):
                              u'[' + repr(decoded_python_string) + u'q]',
                              root_is_array=True)
 
-    def test_surrogate_pair_codepoint_calculation(self):
+    def test_surrogate_pair_code_point_calculation(self):
         self._perform_surrogate_test(r'WWW\ud800\udc00XXX\ud900\ude80YYY\udbff\udfffZZZ',
                                      u'WWW\U00010000XXX\U00050280YYY\U0010ffffZZZ')
 
