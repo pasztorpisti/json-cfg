@@ -38,6 +38,7 @@ def find_version(*path):
 extra_setup_params = {}
 if have_setuptools:
     extra_setup_params['test_suite'] = 'tests'
+    extra_setup_params['tests_require'] = ['mock']
 
 
 setup(

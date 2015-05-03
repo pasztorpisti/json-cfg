@@ -1,5 +1,7 @@
 from unittest import TestCase
-from jsoncfg import loads, loads_config, ParserException, JSONParserParams,\
+from mock import patch
+
+from jsoncfg import load, load_config, loads, loads_config, ParserException, JSONParserParams,\
     StringToScalarConverter, get_python_object_builder_params
 
 
@@ -62,6 +64,32 @@ class TestLoadsConfig(TestCase):
     def test_duplicate_key(self):
         self.assertRaisesRegexp(ParserException, 'Duplicate key: "my_duplicate_key"',
                                 loads_config, '{my_duplicate_key:0,my_duplicate_key:0}')
+
+
+class TestFileLoadFunctions(TestCase):
+    @patch('jsoncfg.functions.loads', return_value='loads_return_value')
+    @patch('jsoncfg.functions.load_utf_text_file', return_value='{k:0}')
+    def test_load(self, mock_load_utf_text_file, mock_loads):
+        res = load('filename')
+        self.assertEqual(res, 'loads_return_value')
+        mock_loads.assert_called_with('{k:0}')
+        mock_load_utf_text_file.assert_called_with(
+            'filename',
+            default_encoding='UTF-8',
+            use_utf8_strings=True,
+        )
+
+    @patch('jsoncfg.functions.loads_config', return_value='loads_config_return_value')
+    @patch('jsoncfg.functions.load_utf_text_file', return_value='{k:0}')
+    def test_load_config(self, mock_load_utf_text_file, mock_loads_config):
+        res = load_config('filename')
+        self.assertEqual(res, 'loads_config_return_value')
+        mock_loads_config.assert_called_with('{k:0}')
+        mock_load_utf_text_file.assert_called_with(
+            'filename',
+            default_encoding='UTF-8',
+            use_utf8_strings=True,
+        )
 
 
 class TestOther(TestCase):

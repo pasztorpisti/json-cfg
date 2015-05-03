@@ -1,7 +1,9 @@
 from unittest import TestCase
+from mock import patch, MagicMock
 
 from jsoncfg.compatibility import python2
-from jsoncfg.text_encoding import detect_encoding_and_remove_bom, decode_utf_text_buffer
+from jsoncfg.text_encoding import detect_encoding_and_remove_bom, decode_utf_text_buffer,\
+    load_utf_text_file
 
 
 class TestEncodingFunctions(TestCase):
@@ -30,3 +32,24 @@ class TestEncodingFunctions(TestCase):
                                                     use_utf8_strings=False), u'UTF')
             self.assertEqual(decode_utf_text_buffer(b'\xff\xfe\0\0U\0\0\0T\0\0\0F\0\0\0',
                                                     use_utf8_strings=True), b'UTF')
+
+    def test_load_utf_text_file_filename(self):
+        with patch('jsoncfg.text_encoding.open', create=True) as mock_open:
+            mock_file = MagicMock()
+            mock_open.return_value.__enter__.return_value = mock_file
+            mock_file.read.return_value = b'file_contents'
+
+            text = load_utf_text_file('fake.txt', use_utf8_strings=False)
+
+        self.assertEqual(text, u'file_contents')
+        mock_open.assert_called_with('fake.txt', 'rb')
+        mock_file.read.assert_called_with()
+
+    def test_load_utf_text_file_fileobject(self):
+        mock_file = MagicMock()
+        mock_file.read.return_value = b'file_contents'
+
+        text = load_utf_text_file(mock_file, use_utf8_strings=False)
+
+        self.assertEqual(text, u'file_contents')
+        mock_file.read.assert_called_with()
