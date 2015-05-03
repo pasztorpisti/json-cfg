@@ -182,7 +182,7 @@ class JSONParser(TextParser):
         """
         while 1:
             # skipping spaces
-            self.skip_chars(self.end, lambda c: c in self.spaces)
+            self.skip_chars(self.end, lambda x: x in self.spaces)
             c = self.peek()
             if not self.params.allow_comments:
                 return c
@@ -380,7 +380,7 @@ class JSONParser(TextParser):
                     if 0xdc00 <= low_surrogate < 0xe000:
                         pos += 6
                         code_point = 0x10000 + (((code_point - 0xd800) << 10) |
-                                               (low_surrogate - 0xdc00))
+                                                (low_surrogate - 0xdc00))
             return code_point, pos
 
     def _handle_escape(self, pos, c):

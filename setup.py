@@ -31,8 +31,8 @@ def find_version(*path):
 
 
 # Get the long description from the relevant file
-#with open('DESCRIPTION.rst', encoding='utf-8') as f:
-#    long_description = f.read()
+# with open('DESCRIPTION.rst', encoding='utf-8') as f:
+#     long_description = f.read()
 
 
 extra_setup_params = {}
@@ -45,7 +45,7 @@ setup(
     version=find_version('jsoncfg', '__init__.py'),
     description='JSON config file parser with extended syntax (e.g.: comments), '
                 'line/column numbers and other extras.',
-    #long_description=long_description,
+    # long_description=long_description,
 
     url='https://github.com/pasztorpisti/json-cfg',
 
