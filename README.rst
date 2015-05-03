@@ -126,10 +126,11 @@ config nodes that make handling the config file much easier:
       exceptions that contain line/column number info about the location of the error.
 
 One of the biggest problems with loading the config into bare python objects with a json library is
-that you can detect the location of config problems only while the config file is being parsed so
-you can detect only json syntax errors. By loading the json into special objects we can retain the
-location of json nodes/elements and use them in our error messages if we find a semantic error
-when we are processing the config data.
+that the loaded json data doesn't contain the line/column numbers for the loaded json
+nodes/elements. This means that you can detect the location of config problems only while the
+config file so you can detect only json syntax errors. By loading the json into special objects
+we can retain the location of json nodes/elements and use them in our error messages if we find
+a semantic error while processing the config data.
 
 I assume that you have already installed json-cfg and you have the previously shown server config
 example in a `server.cfg` file in the current directory.
@@ -158,10 +159,10 @@ The same with a simple json library:
     user_name = config['superusername']
 
 Seemingly the difference isn't that big. With json-cfg you can use extended syntax in the config
-file and the code that loads the config is also somewhat nicer but real difference is what happens
-when we encounter an error. With json-cfg you get an exception with a message that points to the
-problematic part of the json config file while the pure-json example can't tell you the
-location within the config file. In case of a larger configs this can cause headaches.
+file and the code that loads/processes the config is also somewhat nicer but real difference is
+what happens when we encounter an error. With json-cfg you get an exception with a message that
+points to the problematic part of the json config file while the pure-json example can't tell you
+the location within the config file. In case of larger configs this can cause headaches.
 
 Open your `server.cfg` file and remove the required `ip_address` attribute from one of the server
 config blocks. This will cause an error when we try to load the config file with the above code
