@@ -339,13 +339,13 @@ class JSONParser(TextParser):
                 if segment_begin < pos:
                     result.append(self.text[segment_begin:pos])
                 pos += 1
-                break
+                return ''.join(result), True, pos
             elif c == '\\':
                 if segment_begin < pos:
                     result.append(self.text[segment_begin:pos])
                 pos += 1
                 if pos >= self.end:
-                    self.error('Reached the end of stream while parsing quoted string.')
+                    break
                 c = self.text[pos]
                 if c == 'u':
                     code_point, pos = self._handle_unicode_escape(pos)
@@ -356,7 +356,7 @@ class JSONParser(TextParser):
                 segment_begin = pos
             else:
                 pos += 1
-        return ''.join(result), True, pos
+        self.error('Reached the end of stream while parsing quoted string.')
 
     def _handle_unicode_escape(self, pos):
         if self.end - pos < 5:
