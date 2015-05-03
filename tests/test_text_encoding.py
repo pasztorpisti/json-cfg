@@ -20,6 +20,10 @@ class TestEncodingFunctions(TestCase):
             buf, encoding = detect_encoding_and_remove_bom(encoded)
             self.assertEqual(buf.decode(encoding), decoded)
 
+    def test_detect_encoding_and_remove_bom_with_non_bytes_buf(self):
+        self.assertRaisesRegexp(TypeError, 'buf should be a bytes instance but it is a',
+                                detect_encoding_and_remove_bom, u'non_bytes_buf')
+
     def test_decode_text_buffer(self):
         self.assertEqual(decode_utf_text_buffer(b'\xef\xbb\xbfUTF', use_utf8_strings=False), u'UTF')
         if python2:
