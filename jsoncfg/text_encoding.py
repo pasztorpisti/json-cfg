@@ -53,7 +53,8 @@ def detect_encoding_and_remove_bom(buf, default_encoding='UTF-8'):
     doesn't have a BOM prefix.
     :return: (buf_without_bom_prefix, encoding)
     """
-    assert isinstance(buf, bytes)
+    if not isinstance(buf, bytes):
+        raise TypeError('buf should be a bytes instance but it is a %s: ' % type(buf).__name__)
     for bom, encoding in _byte_order_marks:
         if buf.startswith(bom):
             return buf[len(bom):], encoding
