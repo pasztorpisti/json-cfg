@@ -315,3 +315,43 @@ class TestJSONParser(TestCase):
     def test_control_character_in_quoted_string(self):
         self._assert_raises_regexp(r'Encountered a control character that isn\'t allowed in'
                                    ' quoted strings\.', '["\n"]', root_is_array=True)
+
+
+class TestParserListener(TestCase):
+    def setUp(self):
+        self.parser = JSONParser()
+        self.listener = ParserListener()
+        self.listener.begin_parsing(self.parser)
+
+    def tearDown(self):
+        self.listener.end_parsing()
+
+    def test_begin_end_parsing(self):
+        parser = JSONParser()
+        listener = ParserListener()
+        self.assertIsNone(listener.parser)
+        listener.begin_parsing(parser)
+        self.assertEqual(listener.parser, parser)
+        listener.end_parsing()
+        self.assertIsNone(listener.parser)
+
+    def test_begin_object(self):
+        self.assertRaises(NotImplementedError, self.listener.begin_object)
+
+    def test_end_object(self):
+        self.assertRaises(NotImplementedError, self.listener.end_object)
+
+    def test_begin_object_item(self):
+        self.assertRaises(NotImplementedError, self.listener.begin_object_item, 'key', False)
+
+    def test_begin_array(self):
+        self.assertRaises(NotImplementedError, self.listener.begin_array)
+
+    def test_end_array(self):
+        self.assertRaises(NotImplementedError, self.listener.end_array)
+
+    def test_scalar(self):
+        self.assertRaises(NotImplementedError, self.listener.scalar, 'scalar_str', False)
+
+    def test_error(self):
+        self.assertRaises(ParserException, self.listener.error, 'test_error_message')
