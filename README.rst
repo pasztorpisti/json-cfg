@@ -153,13 +153,11 @@ The same with a simple json library:
         listen_on_interface(server['ip_address'], server.get('port', 8000))
     user_name = config['superusername']
 
-The difference isn't big. With json-cfg you can use extended syntax in the config file and the
-code that loads the config is also somewhat nicer but real difference is what happens when we
-encounter an error. With json-cfg you get an exception with a message that points to the
-problematic part of the json config file while the pure-json example throws a `KeyError` exception
-saying that your code tried to lookup a non-existing `'ip_address'` key in a dictionary without
-any location info within the json config file. In case of a larger config file this can cause
-headaches when it comes to locating the error.
+Seemingly the difference isn't that big. With json-cfg you can use extended syntax in the config
+file and the code that loads the config is also somewhat nicer but real difference is what happens
+when we encounter an error. With json-cfg you get an exception with a message that points to the
+problematic part of the json config file while the pure-json example can't tell you the
+location within the config file. In case of a larger configs this can cause headaches.
 
 Open your `server.cfg` file and remove the required `ip_address` attribute from one of the server
 config blocks. This will cause an error when we try to load the config file with the above code
