@@ -14,6 +14,10 @@ json-cfg
     :target: https://landscape.io/github/pasztorpisti/json-cfg/master
     :alt: code health
 
+.. image:: https://img.shields.io/coveralls/pasztorpisti/json-cfg/master.svg?style=flat
+    :target: https://coveralls.io/r/pasztorpisti/json-cfg?branch=master
+    :alt: coverage
+
 .. image:: https://img.shields.io/pypi/v/json-cfg.svg?style=flat
     :target: https://pypi.python.org/pypi/json-cfg
     :alt: pypi
