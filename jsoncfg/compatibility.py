@@ -25,4 +25,4 @@ else:
 
     # This is here just to satisfy import statements.
     def utf8chr(_):
-        return RuntimeError('This should never be called in case of python3.')
+        raise RuntimeError('This should never be called in case of python3.')
