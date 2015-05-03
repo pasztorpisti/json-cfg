@@ -47,25 +47,6 @@ def loads(s,
     return listener.result
 
 
-def load(file, *args, **kwargs):
-    """
-    Does exactly the same as loads() but instead of a json string this function
-    receives the path to a file containing the json string or a file like object with a read()
-    method.
-    :param default_encoding: The encoding to be used if the file doesn't have a BOM prefix.
-    Defaults to UTF-8.
-    :param use_utf8_strings: Ignored in case of python3, in case of python2 the default
-    value of this is True. True means that the loaded json string should be handled as a utf-8
-    encoded str instead of a unicode object.
-    """
-    json_str = load_utf_text_file(
-        file,
-        default_encoding=kwargs.pop('default_encoding', 'UTF-8'),
-        use_utf8_strings=kwargs.pop('use_utf8_strings', True),
-    )
-    return loads(json_str, *args, **kwargs)
-
-
 def loads_config(s,
                  parser_params=JSONParserParams(),
                  string_to_scalar_converter=StringToScalarConverter()):
@@ -100,11 +81,12 @@ def loads_config(s,
     return listener.result
 
 
-def load_config(file, *args, **kwargs):
+def load(file_, *args, **kwargs):
     """
-    Does exactly the same as loads_config() but instead of a json string this function
+    Does exactly the same as loads() but instead of a json string this function
     receives the path to a file containing the json string or a file like object with a read()
     method.
+    :param file_: Filename or a file like object with read() method.
     :param default_encoding: The encoding to be used if the file doesn't have a BOM prefix.
     Defaults to UTF-8.
     :param use_utf8_strings: Ignored in case of python3, in case of python2 the default
@@ -112,7 +94,27 @@ def load_config(file, *args, **kwargs):
     encoded str instead of a unicode object.
     """
     json_str = load_utf_text_file(
-        file,
+        file_,
+        default_encoding=kwargs.pop('default_encoding', 'UTF-8'),
+        use_utf8_strings=kwargs.pop('use_utf8_strings', True),
+    )
+    return loads(json_str, *args, **kwargs)
+
+
+def load_config(file_, *args, **kwargs):
+    """
+    Does exactly the same as loads_config() but instead of a json string this function
+    receives the path to a file containing the json string or a file like object with a read()
+    method.
+    :param file_: Filename or a file like object with read() method.
+    :param default_encoding: The encoding to be used if the file doesn't have a BOM prefix.
+    Defaults to UTF-8.
+    :param use_utf8_strings: Ignored in case of python3, in case of python2 the default
+    value of this is True. True means that the loaded json string should be handled as a utf-8
+    encoded str instead of a unicode object.
+    """
+    json_str = load_utf_text_file(
+        file_,
         default_encoding=kwargs.pop('default_encoding', 'UTF-8'),
         use_utf8_strings=kwargs.pop('use_utf8_strings', True),
     )
