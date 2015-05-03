@@ -204,6 +204,16 @@ class TestJSONParser(TestCase):
         parser = JSONParser(parser_params)
         self.assertRaisesRegexp(ParserException, regexp, parser.parse, json_str, listener)
 
+    def _assert_raises(self, json_str, root_is_array=False,
+                       parser_params=JSONParserParams()):
+        parser_params.root_is_array = root_is_array
+        listener = MyParserListener()
+        parser = JSONParser(parser_params)
+        self.assertRaises(ParserException, parser.parse, json_str, listener)
+
+    def test_garbage_in_input_after_json_str(self):
+        self._assert_raises_regexp(r'Garbage detected after the parsed json!', '{}garbage')
+
     def test_root_is_array(self):
         self._assert_raises_regexp(r'The root of the json is expected to be an array!', '{}', True)
         self._assert_raises_regexp(r'The root of the json is expected to be an object!', '[]',
@@ -255,6 +265,54 @@ class TestJSONParser(TestCase):
         self._test_with_data('/*//*/{key:null}//', expected)
         self._test_with_data('{key:null}//asdf', expected)
         self._assert_raises_regexp(r'Multiline comment isn\'t closed\.', '/*')
+
+    def test_skip_spaces_and_peek_comments_not_allowed(self):
+        """ This test is needed in order to provide coverage in one of
+        the branches of JSONParser._skip_spaces_and_peek() """
+        listener = MyParserListener()
+        parser = JSONParser(JSONParserParams(allow_comments=False))
+        parser.parse('{}', listener)
+
+    def test_skip_spaces_and_peek_invalid_comment_starter(self):
+        """ This test is needed in order to provide coverage in one of
+        the branches of JSONParser._skip_spaces_and_peek() """
+        self._assert_raises_regexp(r'The json string should start with "{"', '/ ')
+
+    def test_no_colon_after_object_key(self):
+        self._assert_raises_regexp(r'Expected ":"', '{a 0}')
+
+    def test_parse_and_return_unquoted_string_falls_at_end_of_input(self):
+        """
+        coverage: this tests a branch of JSONParser._parse_and_return_unquoted_string() where
+        string parsing has to end because the end of the input is reached.
+        """
+        self._assert_raises('{a:0')
+
+    def test_parse_and_return_unquoted_string_zero_length(self):
+        """
+        JSONParser._parse_and_return_string() tries to parse a quoted or unqouted string
+        after 'a:' in the input. Since the next non-space character ('}') is not a quotation
+        mark it will call JSONParser._parse_and_return_unquoted_string() that finds here
+        the end of the string immediately as the current position contains a special character
+        ('}').
+        """
+        self._assert_raises_regexp(r'Expected a scalar here\.', '{a:}')
+
+    def test_reached_the_end_of_stream_while_parsing_quoted_string(self):
+        self._assert_raises_regexp(r'Reached the end of stream while parsing quoted string\.',
+                                   '{"as')
+        # here the input string ends in the middle of an escape sequence
+        self._assert_raises_regexp(r'Reached the end of stream while parsing quoted string\.',
+                                   '{"as\\')
+        self._assert_raises_regexp(r'Reached the end of stream while parsing quoted string\.',
+                                   '{"as\\u')
+
+    def test_handle_unicode_escape(self):
+        self._assert_raises_regexp(r'Error decoding unicode escape sequence\.',
+                                   '{"\\u012X')
+        # coverage: In this case a high surrogate is followed by an invalid unicode escape sequence
+        self._assert_raises_regexp(r'Error decoding unicode escape sequence\.',
+                                   '{"\\ud800\\u012X')
 
     def test_simple_string_escape_sequences(self):
         self._test_with_data(r'["xxx\\\/\"\b\f\t\r\nyyy"]', '[' + repr('xxx\\/\"\b\f\t\r\nyyy') +
