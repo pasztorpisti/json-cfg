@@ -1,7 +1,7 @@
 from unittest import TestCase
 from jsoncfg.config_classes import ValueNotFoundNode, ConfigJSONScalar, ConfigJSONObject,\
     ConfigJSONArray, JSONConfigNodeTypeError, ConfigNode
-from jsoncfg import JSONConfigValueNotFoundError, JSONParserParams
+from jsoncfg import JSONConfigValueNotFoundError, JSONParserParams, JSONValueMapper
 from jsoncfg import loads_config, node_location, node_exists, node_is_object, node_is_array,\
     node_is_scalar, ensure_exists, expect_object, expect_array, expect_scalar
 
@@ -41,6 +41,11 @@ class TestValueNotFoundNode(TestCase):
         self.assertRaises(JSONConfigValueNotFoundError, case0)
         case1 = not_found_node['a']['b']
         self.assertRaises(JSONConfigValueNotFoundError, case1)
+
+
+class TestJSONValueMapper(TestCase):
+    def test_call(self):
+        self.assertRaises(NotImplementedError, JSONValueMapper(), None)
 
 
 class TestConfigNode(TestCase):
