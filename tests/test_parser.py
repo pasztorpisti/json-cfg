@@ -317,6 +317,12 @@ class TestJSONParser(TestCase):
                                    ' quoted strings\.', '["\n"]', root_is_array=True)
 
 
+class TestJSONParserParams(TestCase):
+    def test_unexpected_keyword_arguments(self):
+        self.assertRaisesRegexp(RuntimeError, 'Unexpected keyword arguments: ',
+                                JSONParserParams, my_unexpected_kwarg='woofwoof')
+
+
 class TestParserListener(TestCase):
     def setUp(self):
         self.parser = JSONParser()

@@ -67,3 +67,7 @@ class TestRequireTypeMappers(TestCase):
         self.assertIsInstance(config.obj(require_object), dict)
         self.assertRaises(JSONConfigValueMapperError, config.str, require_object)
         self.assertRaises(JSONConfigValueMapperError, config.str, None, require_object)
+
+    def test_an_arg_is_not_a_type(self):
+        self.assertRaisesRegexp(TypeError, 'One of the args you supplied is not a type\.',
+                                RequireType, 5)

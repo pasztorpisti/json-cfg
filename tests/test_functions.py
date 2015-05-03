@@ -1,5 +1,6 @@
 from unittest import TestCase
-from jsoncfg import loads, loads_config, ParserException, JSONParserParams
+from jsoncfg import loads, loads_config, ParserException, JSONParserParams,\
+    StringToScalarConverter, get_python_object_builder_params
 
 
 TEST_JSON_STRING = """
@@ -33,7 +34,7 @@ class TestLoads(TestCase):
         self.assertDictEqual(obj, TEST_JSON_VALUE)
 
     def test_root_is_array(self):
-        lst = loads("[0, 1, 2]", JSONParserParams(root_is_array=True))
+        lst = loads('[0, 1, 2]', JSONParserParams(root_is_array=True))
         self.assertListEqual(lst, [0, 1, 2])
 
     def test_invalid_json_scalar(self):
@@ -51,7 +52,7 @@ class TestLoadsConfig(TestCase):
         self.assertDictEqual(obj(), TEST_JSON_VALUE)
 
     def test_root_is_array(self):
-        lst = loads_config("[0, 1, 2]", JSONParserParams(root_is_array=True))
+        lst = loads_config('[0, 1, 2]', JSONParserParams(root_is_array=True))
         self.assertListEqual(lst(), [0, 1, 2])
 
     def test_invalid_json_scalar(self):
@@ -61,3 +62,24 @@ class TestLoadsConfig(TestCase):
     def test_duplicate_key(self):
         self.assertRaisesRegexp(ParserException, 'Duplicate key: "my_duplicate_key"',
                                 loads_config, '{my_duplicate_key:0,my_duplicate_key:0}')
+
+
+class TestOther(TestCase):
+    def test_custom_const_scalars(self):
+        my_const = object()
+        my_const2 = object()
+        string_to_scalar_converter = StringToScalarConverter(
+            scalar_const_literals={'my_const': my_const, 'my_const2': my_const2})
+        object_builder_params = get_python_object_builder_params(
+            string_to_scalar_converter=string_to_scalar_converter
+        )
+        res = loads(
+            '[my_const, my_const2]',
+            parser_params=JSONParserParams(root_is_array=True),
+            object_builder_params=object_builder_params,
+        )
+        self.assertEqual(res, [my_const, my_const2])
+
+    def test_get_python_object_builder_params_unexpected_parameters(self):
+        self.assertRaisesRegexp(RuntimeError, 'Unexpected parameters: ',
+                                get_python_object_builder_params, my_unexpected_param=666)
