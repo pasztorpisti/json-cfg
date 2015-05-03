@@ -33,6 +33,7 @@ the following extras compared to the standard `json.load()`:
 - A larger subset of javascript (and not some weird/exotic extension to json that
   would turn json into something that has nothing to do with json/javascript):
 
+    - backward compatible with json so you can still load standard json files too
     - single and multi-line comments - this is more useful then you would think:
       it is good not only for documentation but also for temporarily disabling
       a block in your config without actually deleting entries
