@@ -1,9 +1,9 @@
 from unittest import TestCase
 from jsoncfg.config_classes import ValueNotFoundNode, ConfigJSONScalar, ConfigJSONObject,\
-    ConfigJSONArray, JSONConfigNodeTypeError
+    ConfigJSONArray, JSONConfigNodeTypeError, ConfigNode
 from jsoncfg import JSONConfigValueNotFoundError, JSONParserParams
-from jsoncfg import loads_config, node_exists, node_is_object, node_is_array, node_is_scalar,\
-    ensure_exists, expect_object, expect_array, expect_scalar
+from jsoncfg import loads_config, node_location, node_exists, node_is_object, node_is_array,\
+    node_is_scalar, ensure_exists, expect_object, expect_array, expect_scalar
 
 
 TEST_JSON_STRING = """
@@ -62,6 +62,13 @@ class TestConfigNode(TestCase):
         self.assertEqual(array(default), [])
         self.assertEqual(not_found(default), default)
 
+    def test_value_fetch_not_json_value_mapper_instance(self):
+        config = loads_config('{a:0}')
+        self.assertRaisesRegexp(TypeError, r'1 isn\'t a JSONValueMapper instance!', config.a, 0, 1)
+
+    def test_unimplemented_fetch_unwrapped_value(self):
+        self.assertRaises(NotImplementedError, ConfigNode(0, 0)._fetch_unwrapped_value)
+
 
 class TestConfigJSONScalar(TestCase):
     def test_len(self):
@@ -91,6 +98,20 @@ class TestConfigJSONScalar(TestCase):
             0,
         )
 
+    def test_getattr(self):
+        config = loads_config('[0]', parser_params=JSONParserParams(root_is_array=True))
+        res = config[0].attr
+        self.assertIsInstance(res, ValueNotFoundNode)
+
+    def test_getitem(self):
+        config = loads_config('[0]', parser_params=JSONParserParams(root_is_array=True))
+        res = config[0][0]
+        self.assertIsInstance(res, ValueNotFoundNode)
+
+    def test_repr(self):
+        config = loads_config('[0]', parser_params=JSONParserParams(root_is_array=True))
+        repr(config[0])
+
 
 class TestConfigJSONObject(TestCase):
     def test_len(self):
@@ -118,6 +139,10 @@ class TestConfigJSONObject(TestCase):
         config = loads_config(TEST_JSON_STRING)
         self.assertRaises(JSONConfigValueNotFoundError, config.nonexistent[0].blahblah)
 
+    def test_repr(self):
+        config = loads_config(TEST_JSON_STRING)
+        repr(config)
+
 
 class TestConfigJSONArray(TestCase):
     @staticmethod
@@ -142,20 +167,47 @@ class TestConfigJSONArray(TestCase):
             0,
         )
 
+    def test_getattr(self):
+        config = loads_config(TEST_JSON_STRING)
+        self.assertIsInstance(config.array.a, ValueNotFoundNode)
+
     def test_getitem(self):
         config = loads_config(TEST_JSON_STRING)
         self.assertEquals(config.array[0].a(), 0)
         self.assertEquals(config.array[1].b(), 1)
 
+    def test_getitem_with_negative_index(self):
+        config = loads_config(TEST_JSON_STRING)
+        self.assertDictEqual(config.array[-1](), {'b': 1})
+        self.assertDictEqual(config.array[-2](), {'a': 0})
+        self.assertIsInstance(config.array[-3], ValueNotFoundNode)
+
     def test_item_not_found(self):
         config = loads_config(TEST_JSON_STRING)
         self.assertRaises(JSONConfigValueNotFoundError, config.array[100].blahblah)
+
+    def test_repr(self):
+        config = loads_config(TEST_JSON_STRING)
+        repr(config.array)
 
 
 class TestUtilityFunctions(TestCase):
     @staticmethod
     def loads_array_config(json_string):
         return loads_config(json_string, JSONParserParams(root_is_array=True))
+
+    def test_node_location(self):
+        config = loads_config('{k0:0}')
+        location = node_location(config)
+        self.assertEquals(location, (0, 0))
+
+    def test_node_location_with_value_not_found_node(self):
+        config = loads_config('{}')
+        self.assertRaises(JSONConfigValueNotFoundError, node_location, config.a)
+
+    def test_node_location_with_invalid_value(self):
+        self.assertRaisesRegexp(TypeError, r'Expected a config node but received a list instance.',
+                                node_location, [])
 
     def test_node_exists(self):
         config = loads_config('{k0:0}')

@@ -119,7 +119,7 @@ def _process_value_fetcher_call_args(args):
 
     for mapper in mappers:
         if not isinstance(mapper, JSONValueMapper):
-            raise TypeError('%r in\'t a JSONValueMapper instance!' % (mapper,))
+            raise TypeError('%r isn\'t a JSONValueMapper instance!' % (mapper,))
 
     return default, mappers
 
@@ -168,7 +168,7 @@ class ValueNotFoundNode(object):
         raise JSONConfigValueNotFoundError(self)
 
 
-class _ConfigNode(object):
+class ConfigNode(object):
     """
     Base class for the actual classes whose instances build up the config
     object hierarchy wrapping the actual json objects/arrays/scalars.
@@ -184,7 +184,7 @@ class _ConfigNode(object):
         :param line: Zero based line number. (Add 1 for human readable error reporting).
         :param column: Zero based column number. (Add 1 for human readable error reporting).
         """
-        super(_ConfigNode, self).__init__()
+        super(ConfigNode, self).__init__()
         self._line = line
         self._column = column
 
@@ -210,7 +210,7 @@ class _ConfigNode(object):
         raise NotImplementedError()
 
 
-class ConfigJSONScalar(_ConfigNode):
+class ConfigJSONScalar(ConfigNode):
     def __init__(self, value, line, column):
         super(ConfigJSONScalar, self).__init__(line, column)
         self.value = value
@@ -250,7 +250,7 @@ class ConfigJSONScalar(_ConfigNode):
         return self.value
 
 
-class ConfigJSONObject(_ConfigNode):
+class ConfigJSONObject(ConfigNode):
     def __init__(self, line, column):
         super(ConfigJSONObject, self).__init__(line, column)
         self._dict = OrderedDict()
@@ -283,7 +283,7 @@ class ConfigJSONObject(_ConfigNode):
         self._dict[key] = value
 
 
-class ConfigJSONArray(_ConfigNode):
+class ConfigJSONArray(ConfigNode):
     def __init__(self, line, column):
         super(ConfigJSONArray, self).__init__(line, column)
         self._list = []
@@ -324,7 +324,7 @@ class ConfigJSONArray(_ConfigNode):
 
 
 def node_location(config_node):
-    if isinstance(config_node, _ConfigNode):
+    if isinstance(config_node, ConfigNode):
         return config_node._line, config_node._column
     if isinstance(config_node, ValueNotFoundNode):
         raise JSONConfigValueNotFoundError(config_node)
@@ -335,7 +335,7 @@ def node_location(config_node):
 def node_exists(config_node):
     """ Returns True if the specified config node
     refers to an existing config entry. """
-    return isinstance(config_node, _ConfigNode)
+    return isinstance(config_node, ConfigNode)
 
 
 def node_is_object(config_node):
@@ -361,14 +361,14 @@ def _guarantee_node_class(config_node, node_class):
         return config_node
     if isinstance(config_node, ValueNotFoundNode):
         raise JSONConfigValueNotFoundError(config_node)
-    if isinstance(config_node, _ConfigNode):
+    if isinstance(config_node, ConfigNode):
         raise JSONConfigNodeTypeError(config_node, node_class)
     raise TypeError('Expected a %s or %s instance but received %s.' % (
-        _ConfigNode.__name__, ValueNotFoundNode.__name__, config_node.__class__.__name__))
+        ConfigNode.__name__, ValueNotFoundNode.__name__, config_node.__class__.__name__))
 
 
 def ensure_exists(config_node):
-    return _guarantee_node_class(config_node, _ConfigNode)
+    return _guarantee_node_class(config_node, ConfigNode)
 
 
 def expect_object(config_node):
