@@ -24,11 +24,11 @@ json-cfg
 
 .. image:: https://img.shields.io/github/license/pasztorpisti/json-cfg.svg?style=flat
     :target: https://github.com/pasztorpisti/json-cfg/blob/master/LICENSE.txt
-    :alt: license
+    :alt: license: MIT
 
 
 The goal of this library is providing a json config file loader that has
-the following extras compared to the standard json.loads():
+the following extras compared to the standard `json.load()`:
 
 - A larger subset of javascript (and not some weird/exotic extension to json that
   would turn json into something that has nothing to do with json/javascript):
@@ -103,14 +103,76 @@ Installation
 
     pip install json-cfg
 
-As an alternative you can download the zipped library from https://pypi.python.org/pypi/json-cfg
+Alternatively you can download the zipped library from https://pypi.python.org/pypi/json-cfg
 
-Brief code examples
--------------------
+Usage
+-----
 
-TODO
+The json-cfg library provides two modes when it comes to loading config files: One that is very
+similar to the standard `json.loads()` and another one that returns the json wrapped into special
+config nodes that make handling the config file much easier:
 
-Detailed API docs
------------------
+    - `jsoncfg.load()` and `jsoncfg.loads()` are very similar to the standard `json.loads()`.
+      These functions allow you to load config files with extended syntax into bare python
+      representation of the json data (dictionaries, lists, numbers, etc...).
+    - `jsoncfg.load_config()` and `jsoncfg.loads_config()` load the json data into special wrapper
+      objects that help you to query the config with much nicer syntax. At the same time if you
+      are looking for a value that doesn't exist in the config then these problems are handled with
+      exceptions that contain line/column number info about the location of the error.
 
-TODO
+One of the biggest problems with loading the config into bare python objects with a json library is
+that you can detect the location of config problems only while the config file is being parsed so
+you can detect only json syntax errors. By loading the json into special objects we can retain the
+location of json nodes/elements and use them in our error messages if we find a semantic error
+when we are processing the config data.
+
+I assume that you have already installed json-cfg and you have the previously shown server config
+example in a `server.cfg` file in the current directory.
+
+This is how to load and use the above server configuration with json-cfg:
+
+.. code:: python
+
+    import jsoncfg
+
+    config = jsoncfg.load_config('server.cfg')
+    for server in config.servers:
+        listen_on_interface(server.ip_address(), server.port(8000))
+    user_name = config.superusername()
+
+The same with a simple json library:
+
+.. code:: python
+
+    import json
+
+    with open('server.cfg') as f:
+        config = json.load(f)
+    for server in config['servers']:
+        listen_on_interface(server['ip_address'], server.get('port', 8000))
+    user_name = config['superusername']
+
+The difference isn't big. With json-cfg you can use extended syntax in the config file and the
+code that loads the config is also somewhat nicer but real difference is what happens when we
+encounter an error. With json-cfg you get an exception with a message that points to the
+problematic part of the json config file while the pure-json example throws a `KeyError` exception
+saying that your code tried to lookup a non-existing `'ip_address'` key in a dictionary without
+any location info within the json config file. In case of a larger config file this can cause
+headaches when it comes to locating the error.
+
+Open your `server.cfg` file and remove the required `ip_address` attribute from one of the server
+config blocks. This will cause an error when we try to load the config file with the above code
+examples. The above code snippets report the following error messages in this scenario:
+
+json-cfg:
+
+.. code::
+
+    jsoncfg.config_classes.JSONConfigValueNotFoundError: Required config node not found. Missing query path: .ip_address (relative to error location) [line=3;col=9]
+
+json:
+
+.. code::
+
+    KeyError: 'ip_address'
+
