@@ -205,19 +205,20 @@ class TestJSONParser(TestCase):
         self.assertRaisesRegexp(ParserException, regexp, parser.parse, json_str, listener)
 
     def test_root_is_array(self):
-        self._assert_raises_regexp('The root of the json is expected to be an array!', '{}', True)
-        self._assert_raises_regexp('The root of the json is expected to be an object!', '[]', False)
+        self._assert_raises_regexp(r'The root of the json is expected to be an array!', '{}', True)
+        self._assert_raises_regexp(r'The root of the json is expected to be an object!', '[]',
+                                   False)
 
         self._test_with_data('{}', '{}', False)
         self._test_with_data('[]', '[]', True)
 
     def test_parse_error_at_beginning(self):
-        self._assert_raises_regexp('The json string should start with "\["', 'x', True)
-        self._assert_raises_regexp('The json string should start with "\{"', 'x', False)
+        self._assert_raises_regexp(r'The json string should start with "\["', 'x', True)
+        self._assert_raises_regexp(r'The json string should start with "\{"', 'x', False)
 
     def test_garbage_after_json_string(self):
-        self._assert_raises_regexp('The json string should start with "\["', 'x', True)
-        self._assert_raises_regexp('The json string should start with "\{"', 'x', False)
+        self._assert_raises_regexp(r'The json string should start with "\["', 'x', True)
+        self._assert_raises_regexp(r'The json string should start with "\{"', 'x', False)
 
     def test_basic(self):
         json_string = ' { cfg : asdf, "asdf" : [ 0 , null , /* comment */ [ ] ,\t\r\n //'\
@@ -319,7 +320,7 @@ class TestJSONParser(TestCase):
 
 class TestJSONParserParams(TestCase):
     def test_unexpected_keyword_arguments(self):
-        self.assertRaisesRegexp(RuntimeError, 'Unexpected keyword arguments: ',
+        self.assertRaisesRegexp(RuntimeError, r'Unexpected keyword arguments: ',
                                 JSONParserParams, my_unexpected_kwarg='woofwoof')
 
 

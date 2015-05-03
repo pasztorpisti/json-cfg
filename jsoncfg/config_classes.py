@@ -221,6 +221,13 @@ class ConfigJSONScalar(_ConfigNode):
     def __getitem__(self, index):
         return ValueNotFoundNode(self, [index])
 
+    def __contains__(self, item):
+        raise JSONConfigNodeTypeError(
+            self,
+            ConfigJSONObject,
+            'You are trying to access the __contains__ magic method of a scalar value.'
+        )
+
     def __len__(self):
         raise JSONConfigNodeTypeError(
             self,
@@ -291,6 +298,13 @@ class ConfigJSONArray(_ConfigNode):
             if 0 <= index < len(self._list):
                 return self._list[index]
         return ValueNotFoundNode(self, [index])
+
+    def __contains__(self, item):
+        raise JSONConfigNodeTypeError(
+            self,
+            ConfigJSONObject,
+            'You are trying to access the __contains__ magic method of an array.'
+        )
 
     def __len__(self):
         return len(self._list)

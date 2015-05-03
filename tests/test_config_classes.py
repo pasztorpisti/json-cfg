@@ -64,7 +64,32 @@ class TestConfigNode(TestCase):
 
 
 class TestConfigJSONScalar(TestCase):
-    pass
+    def test_len(self):
+        config = loads_config('[0]', parser_params=JSONParserParams(root_is_array=True))
+        self.assertRaisesRegexp(
+            JSONConfigNodeTypeError,
+            r'You are trying to get the length of a scalar value\.',
+            len,
+            config[0],
+        )
+
+    def test_iter(self):
+        config = loads_config('[0]', parser_params=JSONParserParams(root_is_array=True))
+        self.assertRaisesRegexp(
+            JSONConfigNodeTypeError,
+            r'You are trying to iterate a scalar value\.',
+            iter,
+            config[0],
+        )
+
+    def test_contains(self):
+        config = loads_config('[0]', parser_params=JSONParserParams(root_is_array=True))
+        self.assertRaisesRegexp(
+            JSONConfigNodeTypeError,
+            r'You are trying to access the __contains__ magic method of a scalar value\.',
+            config[0].__contains__,
+            0,
+        )
 
 
 class TestConfigJSONObject(TestCase):
@@ -77,7 +102,7 @@ class TestConfigJSONObject(TestCase):
         result = {k: v() for k, v in config}
         self.assertDictEqual(result, {'k0': 0, 'k1': 1})
 
-    def test_in_operator(self):
+    def test_contains(self):
         config = loads_config('{k0:0}')
         self.assertTrue('k0' in config)
         self.assertFalse('k1' in config)
@@ -107,6 +132,15 @@ class TestConfigJSONArray(TestCase):
         config = self.loads_array_config('[0, 1]')
         items = set(config_val() for config_val in config)
         self.assertSetEqual(items, {0, 1})
+
+    def test_contains(self):
+        config = self.loads_array_config('[]')
+        self.assertRaisesRegexp(
+            JSONConfigNodeTypeError,
+            r'You are trying to access the __contains__ magic method of an array\.',
+            config.__contains__,
+            0,
+        )
 
     def test_getitem(self):
         config = loads_config(TEST_JSON_STRING)

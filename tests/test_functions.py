@@ -40,11 +40,11 @@ class TestLoads(TestCase):
         self.assertListEqual(lst, [0, 1, 2])
 
     def test_invalid_json_scalar(self):
-        self.assertRaisesRegexp(ParserException, 'Invalid json scalar: "invalid_scalar"',
+        self.assertRaisesRegexp(ParserException, r'Invalid json scalar: "invalid_scalar"',
                                 loads, '{key:invalid_scalar}')
 
     def test_duplicate_key(self):
-        self.assertRaisesRegexp(ParserException, 'Duplicate key: "my_duplicate_key"',
+        self.assertRaisesRegexp(ParserException, r'Duplicate key: "my_duplicate_key"',
                                 loads, '{my_duplicate_key:0,my_duplicate_key:0}')
 
 
@@ -58,11 +58,11 @@ class TestLoadsConfig(TestCase):
         self.assertListEqual(lst(), [0, 1, 2])
 
     def test_invalid_json_scalar(self):
-        self.assertRaisesRegexp(ParserException, 'Invalid json scalar: "invalid_scalar"',
+        self.assertRaisesRegexp(ParserException, r'Invalid json scalar: "invalid_scalar"',
                                 loads_config, '{key:invalid_scalar}')
 
     def test_duplicate_key(self):
-        self.assertRaisesRegexp(ParserException, 'Duplicate key: "my_duplicate_key"',
+        self.assertRaisesRegexp(ParserException, r'Duplicate key: "my_duplicate_key"',
                                 loads_config, '{my_duplicate_key:0,my_duplicate_key:0}')
 
 
@@ -109,5 +109,5 @@ class TestOther(TestCase):
         self.assertEqual(res, [my_const, my_const2])
 
     def test_get_python_object_builder_params_unexpected_parameters(self):
-        self.assertRaisesRegexp(RuntimeError, 'Unexpected parameters: ',
+        self.assertRaisesRegexp(RuntimeError, r'Unexpected parameters: ',
                                 get_python_object_builder_params, my_unexpected_param=666)

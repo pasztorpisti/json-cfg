@@ -9,7 +9,7 @@ class TestFunctions(TestCase):
         else:
             self.assertRaisesRegexp(
                 RuntimeError,
-                'This should never be called in case of python3\.',
+                r'This should never be called in case of python3\.',
                 utf8chr,
                 0x1234
             )
