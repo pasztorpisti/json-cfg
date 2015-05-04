@@ -71,7 +71,7 @@ setup(
         'Programming Language :: Python :: Implementation :: PyPy',
     ],
 
-    keywords='json configuration jsonconfiguration json-configuration comment',
+    keywords='json config configuration comment',
     packages=['jsoncfg', 'tests'],
 
     **extra_setup_params
