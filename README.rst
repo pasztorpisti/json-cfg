@@ -42,7 +42,7 @@ the following extras compared to the standard `json.load()`:
       it is good not only for documentation but also for temporarily disabling
       a block in your config without actually deleting entries
     - object (dictionary) keys without quotes
-    - trailing commas (allowing commas after the last item of objects and arrays)
+    - trailing commas (allowing a comma after the last item of objects and arrays)
 
 - Providing line number information for each element of the loaded config file
   and using this to display useful error messages that help locating errors not
@@ -70,7 +70,7 @@ Config file examples
                 "port": 8081
             }
         ],
-        "superusername": "tron"
+        "superuser_name": "tron"
     }
 
 **Something similar with json-cfg:**
@@ -94,7 +94,7 @@ Config file examples
             },  // <-- optional trailing comma
             /**/
         ],
-        superusername: "tron",  // <-- optional trailing comma
+        superuser_name: "tron",  // <-- optional trailing comma
     }
 
 *Hint: use javascript syntax highlight in your text editor for json config files
@@ -144,7 +144,7 @@ This is how to load and use the above server configuration with json-cfg:
     config = jsoncfg.load_config('server.cfg')
     for server in config.servers:
         listen_on_interface(server.ip_address(), server.port(8000))
-    user_name = config.superusername()
+    superuser_name = config.superuser_name()
 
 The same with a simple json library:
 
@@ -156,7 +156,7 @@ The same with a simple json library:
         config = json.load(f)
     for server in config['servers']:
         listen_on_interface(server['ip_address'], server.get('port', 8000))
-    user_name = config['superusername']
+    superuser_name = config['superuser_name']
 
 Seemingly the difference isn't that big. With json-cfg you can use extended syntax in the config
 file and the code that loads/processes the config is also somewhat nicer but real difference is
