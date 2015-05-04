@@ -1,6 +1,8 @@
-from collections import OrderedDict
-from .exceptions import JSONConfigException
 import numbers
+from collections import OrderedDict
+
+from .compatibility import my_basestring
+from .exceptions import JSONConfigException
 
 
 _undefined = object()
@@ -89,6 +91,18 @@ class JSONConfigNodeTypeError(JSONConfigQueryError):
         if error_message is not None:
             message += ' %s' % (error_message,)
         super(JSONConfigNodeTypeError, self).__init__(config_node, message)
+
+
+class JSONConfigIndexError(JSONConfigQueryError):
+    """
+    This is raised when you try to index into an array node and the index is out of range. Indexing
+    into a different kind of node (object, scalar) doesn't raise this.
+    """
+    def __init__(self, config_json_array, index):
+        self.config_json_array = config_json_array
+        self.index = index
+        message = 'Index (%s) is out of range [0, %s)' % (index, len(config_json_array))
+        super(JSONConfigIndexError, self).__init__(config_json_array, message)
 
 
 class JSONValueMapper(object):
@@ -216,23 +230,39 @@ class ConfigJSONScalar(ConfigNode):
         self.value = value
 
     def __getattr__(self, item):
-        return ValueNotFoundNode(self, [item])
+        raise JSONConfigNodeTypeError(
+            self,
+            ConfigJSONObject,
+            'You are trying to get an item from a scalar as if it was an object. item=%s' % (item,)
+        )
 
-    def __getitem__(self, index):
-        return ValueNotFoundNode(self, [index])
+    def __getitem__(self, item):
+        if not isinstance(item, (my_basestring, numbers.Integral)):
+            raise TypeError('You are allowed to index only with string or integer.')
+        if isinstance(item, numbers.Integral):
+            raise JSONConfigNodeTypeError(
+                self,
+                ConfigJSONArray,
+                'You are trying to index into a scalar as if it was an array. index=%s' % (item,)
+            )
+        raise JSONConfigNodeTypeError(
+            self,
+            ConfigJSONObject,
+            'You are trying to get an item from a scalar as if it was an object. item=%s' % (item,)
+        )
 
     def __contains__(self, item):
         raise JSONConfigNodeTypeError(
             self,
             ConfigJSONObject,
-            'You are trying to access the __contains__ magic method of a scalar value.'
+            'You are trying to access the __contains__ magic method of a scalar config object.'
         )
 
     def __len__(self):
         raise JSONConfigNodeTypeError(
             self,
             (ConfigJSONObject, ConfigJSONArray),
-            'You are trying to get the length of a scalar value.'
+            'You are trying to access the __len__ of a scalar config object.'
         )
 
     def __iter__(self):
@@ -259,6 +289,14 @@ class ConfigJSONObject(ConfigNode):
         return self.__getitem__(item)
 
     def __getitem__(self, item):
+        if isinstance(item, numbers.Integral):
+            raise JSONConfigNodeTypeError(
+                self,
+                ConfigJSONObject,
+                'You are trying to index into an object as if it was an array. index=%s' % (item,)
+            )
+        if not isinstance(item, my_basestring):
+            raise TypeError('You are allowed to index only with string or integer.')
         if item in self._dict:
             return self._dict[item]
         return ValueNotFoundNode(self, [item])
@@ -289,15 +327,26 @@ class ConfigJSONArray(ConfigNode):
         self._list = []
 
     def __getattr__(self, item):
-        return ValueNotFoundNode(self, [item])
+        raise JSONConfigNodeTypeError(
+            self,
+            ConfigJSONObject,
+            'You are trying to get an item from an array as if it was an object. item=%s' % (item,)
+        )
 
-    def __getitem__(self, index):
-        if isinstance(index, numbers.Integral):
-            if index < 0:
-                index += len(self._list)
-            if 0 <= index < len(self._list):
-                return self._list[index]
-        return ValueNotFoundNode(self, [index])
+    def __getitem__(self, item):
+        if isinstance(item, numbers.Integral):
+            if item < 0:
+                item += len(self._list)
+            if 0 <= item < len(self._list):
+                return self._list[item]
+            raise JSONConfigIndexError(self, item)
+        if not isinstance(item, my_basestring):
+            raise TypeError('You are allowed to index only with string or integer.')
+        raise JSONConfigNodeTypeError(
+            self,
+            ConfigJSONObject,
+            'You are trying to get an item from an array as if it was an object. item=%s' % (item,)
+        )
 
     def __contains__(self, item):
         raise JSONConfigNodeTypeError(
