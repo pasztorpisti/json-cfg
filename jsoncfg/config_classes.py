@@ -292,7 +292,7 @@ class ConfigJSONObject(ConfigNode):
         if isinstance(item, numbers.Integral):
             raise JSONConfigNodeTypeError(
                 self,
-                ConfigJSONObject,
+                ConfigJSONArray,
                 'You are trying to index into an object as if it was an array. index=%s' % (item,)
             )
         if not isinstance(item, my_basestring):
