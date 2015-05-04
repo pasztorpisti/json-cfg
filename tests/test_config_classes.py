@@ -209,7 +209,7 @@ class TestConfigJSONArray(TestCase):
         self.assertRaisesRegexp(
             JSONConfigNodeTypeError,
             r'You are trying to get an item from an array as if it was an object\.',
-            config.array.__getitem__,
+            config.array.__getattr__,
             'item',
         )
 
@@ -217,6 +217,12 @@ class TestConfigJSONArray(TestCase):
         config = loads_config(TEST_JSON_STRING)
         self.assertEquals(config.array[0].a(), 0)
         self.assertEquals(config.array[1].b(), 1)
+        self.assertRaisesRegexp(
+            TypeError,
+            r'You are allowed to index only with string or integer\.',
+            config.array.__getitem__,
+            None,
+        )
 
     def test_getitem_with_negative_index(self):
         config = loads_config(TEST_JSON_STRING)
