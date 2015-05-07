@@ -52,7 +52,7 @@ the following extras compared to the standard `json.load()`:
 - Providing line number information for each element of the loaded config file
   and using this to display useful error messages that help locating errors not
   only while parsing the file but also when processing/interpreting it.
-- A nice config query syntax that handles default values, required elements and
+- A simple config query syntax that handles default values, required elements and
   automatically raises an exception in case of error (with useful info including
   the location of the error in the config file).
 
@@ -60,7 +60,7 @@ the following extras compared to the standard `json.load()`:
 Config file examples
 --------------------
 
-**A traditional json config file:**
+A traditional json config file:
 
 .. code-block:: javascript
 
@@ -78,7 +78,7 @@ Config file examples
         "superuser_name": "tron"
     }
 
-**Something similar with json-cfg:**
+Something similar but better with json-cfg:
 
 .. code-block:: javascript
     
@@ -102,9 +102,14 @@ Config file examples
         superuser_name: "tron",  // <-- optional trailing comma
     }
 
-*Hint: use javascript syntax highlight in your text editor for json config files
-whenever possible - this makes reading config files much easier especially when you
-have a lot of comments or large commented config blocks.*
+Note that json-cfg can load both config files because standard json is a subset of the extended
+syntax allowed by json-cfg.
+
+.. tip::
+
+    Use javascript syntax highlight in your text editor for json config files
+    whenever possible - this makes reading config files much easier especially
+    when you have a lot of comments or large commented config blocks.
 
 -----
 Usage
@@ -144,18 +149,7 @@ for the json nodes/elements and we can use them in our error messages in case of
 I assume that you have already installed json-cfg and you have the previously shown server config
 example in a `server.cfg` file in the current directory.
 
-This is how to load and process the above server configuration with json-cfg:
-
-.. code-block:: python
-
-    import jsoncfg
-
-    config = jsoncfg.load_config('server.cfg')
-    for server in config.servers:
-        listen_on_interface(server.ip_address(), server.port(8000))
-    superuser_name = config.superuser_name()
-
-The same with a simple json library:
+This is how to load and process the above server configuration with a simple json library:
 
 .. code-block:: python
 
@@ -167,6 +161,17 @@ The same with a simple json library:
         listen_on_interface(server['ip_address'], server.get('port', 8000))
     superuser_name = config['superuser_name']
 
+The same with json-cfg:
+
+.. code-block:: python
+
+    import jsoncfg
+
+    config = jsoncfg.load_config('server.cfg')
+    for server in config.servers:
+        listen_on_interface(server.ip_address(), server.port(8000))
+    superuser_name = config.superuser_name()
+
 Seemingly the difference isn't that big. With json-cfg you can use extended syntax in the config
 file and the code that loads/processes the config is also somewhat nicer but real difference is
 what happens when we encounter an error. With json-cfg you get an exception with a message that
@@ -177,17 +182,17 @@ Open your `server.cfg` file and remove the required `ip_address` attribute from 
 config blocks. This will cause an error when we try to load the config file with the above code
 examples. The above code snippets report the following error messages in this scenario:
 
-json-cfg:
-
-.. code-block::
-
-    jsoncfg.config_classes.JSONConfigValueNotFoundError: Required config node not found. Missing query path: .ip_address (relative to error location) [line=3;col=9]
-
 json:
 
 .. code-block::
 
     KeyError: 'ip_address'
+
+json-cfg:
+
+.. code-block::
+
+    jsoncfg.config_classes.JSONConfigValueNotFoundError: Required config node not found. Missing query path: .ip_address (relative to error location) [line=3;col=9]
 
 The loaded json config objects
 ------------------------------
@@ -221,7 +226,7 @@ operations to get values from the config:
     2. fetching the python value from the selected wrapper object: this can be done by calling the
        queried wrapper object.
 
-The next sections explain these two operations in more detail.
+The following sections explain these two operations in more detail.
 
 Querying the json config hierarchy
 """"""""""""""""""""""""""""""""""
@@ -365,7 +370,7 @@ module contains a few predefined type-checkers but you can create your own value
 
     # Getting a required guest_name parameter from the config. The parameter has to be either
     # None (null in the json file) or a string.
-    guest_password = config.guest_name(RequireType(type(None), str))
+    guest_name = config.guest_name(RequireType(type(None), str))
 
 
 Writing a custom value mapper
@@ -373,6 +378,7 @@ Writing a custom value mapper
 
     - Derive your own value mapper class from `jsoncfg.JSONValueMapper`.
     - Implement the `__call__` method that receives one value and returns one value:
+
         - Your `__call__` method can return the received value intact but it is allowed to
           return a completely different transformed value.
         - Your `__call__` implementation can perform validation. If the validation fails then
