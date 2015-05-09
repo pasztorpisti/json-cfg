@@ -1,5 +1,6 @@
 from unittest import TestCase
-from jsoncfg.parser import TextParser, JSONConfigParserException, ParserListener, JSONParser, JSONParserParams
+from jsoncfg.parser import TextParser, JSONConfigParserException, ParserListener, JSONParser,\
+    JSONParserParams
 from jsoncfg.compatibility import my_unicode
 
 

@@ -1,8 +1,8 @@
 from unittest import TestCase
 from mock import patch
 
-from jsoncfg import load, load_config, loads, loads_config, JSONConfigParserException, JSONParserParams,\
-    StringToScalarConverter, get_python_object_builder_params
+from jsoncfg import load, load_config, loads, loads_config, JSONConfigParserException,\
+    JSONParserParams, StringToScalarConverter, get_python_object_builder_params
 
 
 TEST_JSON_STRING = """
