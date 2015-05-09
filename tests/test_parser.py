@@ -1,5 +1,5 @@
 from unittest import TestCase
-from jsoncfg.parser import TextParser, ParserException, ParserListener, JSONParser, JSONParserParams
+from jsoncfg.parser import TextParser, JSONConfigParserException, ParserListener, JSONParser, JSONParserParams
 from jsoncfg.compatibility import my_unicode
 
 
@@ -150,10 +150,10 @@ class TestTextParser(TestCase):
 
     def test_expect_failure(self):
         parser = self._text_parser('abc')
-        self.assertRaises(ParserException, parser.expect, 'b')
+        self.assertRaises(JSONConfigParserException, parser.expect, 'b')
         parser = self._text_parser('abc')
         parser.skip_to(3)
-        self.assertRaises(ParserException, parser.expect, 'a')
+        self.assertRaises(JSONConfigParserException, parser.expect, 'a')
 
 
 class MyParserListener(ParserListener):
@@ -202,14 +202,14 @@ class TestJSONParser(TestCase):
         parser_params.root_is_array = root_is_array
         listener = MyParserListener()
         parser = JSONParser(parser_params)
-        self.assertRaisesRegexp(ParserException, regexp, parser.parse, json_str, listener)
+        self.assertRaisesRegexp(JSONConfigParserException, regexp, parser.parse, json_str, listener)
 
     def _assert_raises(self, json_str, root_is_array=False,
                        parser_params=JSONParserParams()):
         parser_params.root_is_array = root_is_array
         listener = MyParserListener()
         parser = JSONParser(parser_params)
-        self.assertRaises(ParserException, parser.parse, json_str, listener)
+        self.assertRaises(JSONConfigParserException, parser.parse, json_str, listener)
 
     def test_garbage_in_input_after_json_str(self):
         self._assert_raises_regexp(r'Garbage detected after the parsed json!', '{}garbage')
@@ -419,4 +419,4 @@ class TestParserListener(TestCase):
         self.assertRaises(NotImplementedError, self.listener.scalar, 'scalar_str', False)
 
     def test_error(self):
-        self.assertRaises(ParserException, self.listener.error, 'test_error_message')
+        self.assertRaises(JSONConfigParserException, self.listener.error, 'test_error_message')

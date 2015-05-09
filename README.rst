@@ -443,9 +443,9 @@ Error handling: exceptions
 --------------------------
 
 The base of all library exceptions is `jsoncfg.JSONConfigException`. If the parsed json contains a
-syntax error then you receive a `jsoncfg.ParserException` - this exception has no subclasses. In
-case of config query errors you receive a `jsoncfg.JSONConfigQueryError` - this exception has
-several subclasses.
+syntax error then you receive a `jsoncfg.JSONConfigParserException` - this exception has no
+subclasses. In case of config query errors you receive a `jsoncfg.JSONConfigQueryError` - this
+exception has several subclasses.
 
 .. code-block::
 
@@ -454,9 +454,9 @@ several subclasses.
                          +---------------------+
                             ▲               ▲
                             |               |
-                +-----------+-----+         |
-                | ParserException |         |
-                +-----------------+         |
+        +-------------------+-------+       |
+        | JSONConfigParserException |       |
+        +---------------------------+       |
                                       +-----+----------------+
               +---------------------->+ JSONConfigQueryError +<------------------------+
               |                       +----------------------+                         |
@@ -477,7 +477,7 @@ several subclasses.
     exception is never raised directly - the library raises only exceptions that are derived from
     this.
 
-`jsoncfg.ParserException`
+`jsoncfg.JSONConfigParserException`
 
     You receive this exception if there is a syntax error in the parsed json.
 

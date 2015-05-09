@@ -6,13 +6,13 @@ from .compatibility import my_xrange, my_unichr, my_unicode, utf8chr
 from .exceptions import JSONConfigException
 
 
-class ParserException(JSONConfigException):
+class JSONConfigParserException(JSONConfigException):
     def __init__(self, parser, error_message):
         self.error_message = error_message
         self.line = parser.line + 1
         self.column = parser.column + 1
         message = '%s [line=%s;col=%s]' % (error_message, self.line, self.column)
-        super(ParserException, self).__init__(message)
+        super(JSONConfigParserException, self).__init__(message)
 
 
 class TextParser(object):
@@ -52,7 +52,7 @@ class TextParser(object):
     def error(self, message):
         """ Raises an exception with the given message and with the current position of
         the parser in the parsed json string. """
-        raise ParserException(self, message)
+        raise JSONConfigParserException(self, message)
 
     def skip_chars(self, target_pos, is_char_skippable_func):
         assert self.pos <= target_pos <= self.end
@@ -407,7 +407,7 @@ class ParserListener(object):
         self.parser = None
 
     def error(self, message):
-        raise ParserException(self.parser, message)
+        raise JSONConfigParserException(self.parser, message)
 
     def begin_parsing(self, parser):
         self.parser = parser

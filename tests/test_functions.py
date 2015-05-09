@@ -1,7 +1,7 @@
 from unittest import TestCase
 from mock import patch
 
-from jsoncfg import load, load_config, loads, loads_config, ParserException, JSONParserParams,\
+from jsoncfg import load, load_config, loads, loads_config, JSONConfigParserException, JSONParserParams,\
     StringToScalarConverter, get_python_object_builder_params
 
 
@@ -40,11 +40,11 @@ class TestLoads(TestCase):
         self.assertListEqual(lst, [0, 1, 2])
 
     def test_invalid_json_scalar(self):
-        self.assertRaisesRegexp(ParserException, r'Invalid json scalar: "invalid_scalar"',
+        self.assertRaisesRegexp(JSONConfigParserException, r'Invalid json scalar: "invalid_scalar"',
                                 loads, '{key:invalid_scalar}')
 
     def test_duplicate_key(self):
-        self.assertRaisesRegexp(ParserException, r'Duplicate key: "my_duplicate_key"',
+        self.assertRaisesRegexp(JSONConfigParserException, r'Duplicate key: "my_duplicate_key"',
                                 loads, '{my_duplicate_key:0,my_duplicate_key:0}')
 
 
@@ -58,11 +58,11 @@ class TestLoadsConfig(TestCase):
         self.assertListEqual(lst(), [0, 1, 2])
 
     def test_invalid_json_scalar(self):
-        self.assertRaisesRegexp(ParserException, r'Invalid json scalar: "invalid_scalar"',
+        self.assertRaisesRegexp(JSONConfigParserException, r'Invalid json scalar: "invalid_scalar"',
                                 loads_config, '{key:invalid_scalar}')
 
     def test_duplicate_key(self):
-        self.assertRaisesRegexp(ParserException, r'Duplicate key: "my_duplicate_key"',
+        self.assertRaisesRegexp(JSONConfigParserException, r'Duplicate key: "my_duplicate_key"',
                                 loads_config, '{my_duplicate_key:0,my_duplicate_key:0}')
 
 

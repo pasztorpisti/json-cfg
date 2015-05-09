@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from .exceptions import JSONConfigException
-from .parser import ParserException
+from .parser import JSONConfigParserException
 from .config_classes import JSONConfigQueryError, JSONConfigValueMapperError,\
     JSONConfigValueNotFoundError, JSONConfigNodeTypeError,\
     JSONValueMapper, node_location,\
@@ -14,7 +14,7 @@ from .tree_python import DefaultObjectCreator, DefaultArrayCreator, default_numb
 
 __all__ = [
     'JSONConfigException',
-    'ParserException',
+    'JSONConfigParserException',
     'JSONConfigQueryError', 'JSONConfigValueMapperError',
     'JSONConfigValueNotFoundError', 'JSONConfigNodeTypeError',
     'JSONValueMapper', 'node_location',
