@@ -421,7 +421,6 @@ Custom value mapper example code:
             if not isinstance(v, str):
                 raise TypeError('Expected a naive iso8601 datetime string but found %r' % v)
             return datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
-    to_datetime = ToDateTime()
 
     config = jsoncfg.load_config('server.cfg')
 
@@ -436,6 +435,7 @@ Custom value mapper example code:
     port = config.servers[0].port(8000, require_integer, check_http_port_range)
 
     # to_datetime converts a naive iso8601 datetime string into a datetime instance.
+    to_datetime = ToDateTime()
     superuser_birthday = config.superuser_birthday(None, to_datetime)
 
 
