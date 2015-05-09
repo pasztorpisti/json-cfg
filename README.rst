@@ -222,9 +222,9 @@ public methods to conflict with the key values in your config file.
 After loading the config you have a tree of wrapper object nodes and you have to perform these two
 operations to get values from the config:
 
-    1. querying/reading/traversing the json hierarchy: the result of querying is a wrapper object
-    2. fetching the python value from the selected wrapper object: this can be done by calling the
-       queried wrapper object.
+1. querying/reading/traversing the json hierarchy: the result of querying is a wrapper object
+2. fetching the python value from the selected wrapper object: this can be done by calling the
+   queried wrapper object.
 
 The following sections explain these two operations in more detail.
 
