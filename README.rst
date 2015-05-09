@@ -376,17 +376,17 @@ module contains a few predefined type-checkers but you can create your own value
 Writing a custom value mapper (or validator)
 ````````````````````````````````````````````
 
-    - Derive your own value mapper class from `jsoncfg.JSONValueMapper`.
-    - Implement the `__call__` method that receives one value and returns one value:
+- Derive your own value mapper class from `jsoncfg.JSONValueMapper`.
+- Implement the `__call__` method that receives one value and returns one value:
 
-        - Your `__call__` method can return the received value intact but it is allowed to
-          return a completely different transformed value.
-        - Your `__call__` implementation can perform validation. If the validation fails then
-          you have to raise an exception. This exception can be anything but if you don't have
-          a better idea then simply use the standard `ValueError` or `TypeError`. This exception
-          will be caught by the value fetcher call and it re-raises another json-cfg specific
-          exception that contains useful error message with the location of the error and that
-          exception also contains the exception you raised while validating.
+    - Your `__call__` method can return the received value intact but it is allowed to
+      return a completely different transformed value.
+    - Your `__call__` implementation can perform validation. If the validation fails then
+      you have to raise an exception. This exception can be anything but if you don't have
+      a better idea then simply use the standard `ValueError` or `TypeError`. This exception
+      will be caught by the value fetcher call and it re-raises another json-cfg specific
+      exception that contains useful error message with the location of the error and that
+      exception also contains the exception you raised while validating.
 
 Custom value mapper example code:
 
