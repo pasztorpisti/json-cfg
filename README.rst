@@ -194,8 +194,8 @@ json-cfg:
 
     jsoncfg.config_classes.JSONConfigValueNotFoundError: Required config node not found. Missing query path: .ip_address (relative to error location) [line=3;col=9]
 
-The loaded json config objects
-------------------------------
+Detailed explanation of the library interface
+---------------------------------------------
 
 When you load your json with `jsoncfg.load_config()` or `jsoncfg.loads_config()` the returned json
 data - the hierarchy - is a tree of wrapper objects provided by this library. These wrapper objects
@@ -373,8 +373,8 @@ module contains a few predefined type-checkers but you can create your own value
     guest_name = config.guest_name(RequireType(type(None), str))
 
 
-Writing a custom value mapper
-`````````````````````````````
+Writing a custom value mapper (or validator)
+````````````````````````````````````````````
 
     - Derive your own value mapper class from `jsoncfg.JSONValueMapper`.
     - Implement the `__call__` method that receives one value and returns one value:
@@ -439,13 +439,86 @@ Custom value mapper example code:
     superuser_birthday = config.superuser_birthday(None, to_datetime)
 
 
-Error handling
---------------
-
-TODO: Coming soon... This section will describe exceptions and some pitfalls.
-
-Optional utility functions
+Error handling: exceptions
 --------------------------
+
+The base of all library exceptions is `jsoncfg.JSONConfigException`. If the parsed json contains a
+syntax error then you receive a `jsoncfg.ParserException` - this exception has no subclasses. In
+case of config query errors you receive a `jsoncfg.JSONConfigQueryError` - this exception has
+several subclasses.
+
+.. code-block::
+
+                             +---------------------+
+                             | JSONConfigException |
+                             +---------------------+
+                                ▲               ▲
+                                |               |
+                    +-----------+-----+         |
+                    | ParserException |         |
+                    +-----------------+         |
+                                          +-----+----------------+
+                  +---------------------->+ JSONConfigQueryError +<------------------------+
+                  |                       +----------------------+                         |
+                  |                          ▲                ▲                            |
+                  |                          |                |                            |
+                  |   +----------------------------+    +------------------------------+   |
+                  |   | JSONConfigValueMapperError |    | JSONConfigValueNotFoundError |   |
+                  |   +----------------------------+    +------------------------------+   |
+                  |                                                                        |
+    +-------------+-----------+                                           +----------------+-----+
+    | JSONConfigNodeTypeError |                                           | JSONConfigIndexError |
+    +-------------------------+                                           +----------------------+
+
+`jsoncfg.JSONConfigException`
+
+    This is the mother of all exceptions raised by the library (aside from some some `ValueError`s
+    and `TypeErrors` that are raised in case of trivial programming mistakes). Note that this
+    exception is never raised directly - the library raises only exceptions that are derived from
+    this.
+
+`jsoncfg.ParserException`
+
+    You receive this exception if there is a syntax error in the parsed json.
+
+    - `error_message`: The error message without the line/column number
+      info. The standard `Exception.message` field contains this very same message but with the
+      line/column info formatted into it as a postfix.
+    - `line`, `column`: line and column information to locate the error easily in the parsed json.
+
+`jsoncfg.JSONConfigQueryError`
+
+    You receive this exception in case of errors you make while processing the parsed json. This
+    exception class is never instantiated directly, only its subclasses are used.
+
+    - `config_node`: The json node/element that was processed when the error happened.
+    - `line`, `column`: line and column information to locate the error easily in the parsed json.
+
+`jsoncfg.JSONConfigValueMapperError`
+
+    Raised when you query and fetch a value by specifying a value mapper but the value mapper
+    instance raises an exception during while fetching the value.
+
+    - `mapper_exception`: The exception instance raised by the value mapper.
+
+`jsoncfg.JSONConfigValueNotFoundError`
+
+    This is raised when you try to fetch a required (non-optional) value that doesn't exist in the
+    config file.
+
+`jsoncfg.JSONConfigNodeTypeError`
+
+    You get this exception if you try to perform an operation on a node that is not allowed for
+    that node type (object, array or scalar), for example indexing into an array with a string.
+
+`jsoncfg.JSONConfigIndexError`
+
+    Over-indexing a json array results in this exception.
+
+    - `index`: The index used to over-index the array.
+
+Utility functions
+-----------------
 
 TODO: Coming soon... The config wrapper objects have no public methods but in some cases you may
 want to extract some info from them (for example line/column number, type of node). You can
