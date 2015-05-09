@@ -99,7 +99,6 @@ class JSONConfigIndexError(JSONConfigQueryError):
     into a different kind of node (object, scalar) doesn't raise this.
     """
     def __init__(self, config_json_array, index):
-        self.config_json_array = config_json_array
         self.index = index
         message = 'Index (%s) is out of range [0, %s)' % (index, len(config_json_array))
         super(JSONConfigIndexError, self).__init__(config_json_array, message)
