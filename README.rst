@@ -46,7 +46,7 @@ the following extras compared to the standard `json.load()`:
     - single and multi-line comments - this is more useful then you would think:
       it is good not only for documentation but also for temporarily disabling
       a block in your config without actually deleting entries
-    - object (dictionary) keys without quotes
+    - object (dictionary) keys without quotes: less quotation marks, less noise
     - trailing commas (allowing a comma after the last item of objects and arrays)
 
 - Providing line number information for each element of the loaded config file
@@ -131,16 +131,16 @@ The json-cfg library provides two modes when it comes to loading config files: O
 similar to the standard `json.loads()` and another one that returns the json wrapped into special
 config nodes that make handling the config file much easier:
 
-    - `jsoncfg.load()` and `jsoncfg.loads()` are very similar to the standard `json.loads()`.
-      These functions allow you to load config files with extended syntax into bare python
-      representation of the json data (dictionaries, lists, numbers, etc...).
-    - `jsoncfg.load_config()` and `jsoncfg.loads_config()` load the json data into special wrapper
-      objects that help you to query the config with much nicer syntax. At the same time if you
-      are looking for a value that doesn't exist in the config then these problems are handled with
-      exceptions that contain line/column number info about the location of the error.
+- `jsoncfg.load()` and `jsoncfg.loads()` are very similar to the standard `json.loads()`.
+  These functions allow you to load config files into bare python representation of the json
+  data (dictionaries, lists, numbers, etc...).
+- `jsoncfg.load_config()` and `jsoncfg.loads_config()` load the json data into special wrapper
+  objects that help you to query the config with much nicer syntax. At the same time if you
+  are looking for a value that doesn't exist in the config then these problems are handled with
+  exceptions that contain line/column number info about the location of the error.
 
-One of the biggest problems with loading the config into bare python objects with a json library is
-that the loaded json data doesn't contain the line/column numbers for the loaded json
+One of the biggest problems with loading the config into bare python objects with a simple json
+library is that the loaded json data doesn't contain the line/column numbers for the loaded json
 nodes/elements. This means that by using a simple json library you can report the location of errors
 with config file line/column numbers only in case of json syntax errors (in best case).
 By loading the json nodes/elements into our wrapper objects we can retain the line/column numbers
@@ -174,7 +174,7 @@ The same with json-cfg:
 
 Seemingly the difference isn't that big. With json-cfg you can use extended syntax in the config
 file and the code that loads/processes the config is also somewhat nicer but real difference is
-what happens when we encounter an error. With json-cfg you get an exception with a message that
+what happens when you encounter an error. With json-cfg you get an exception with a message that
 points to the problematic part of the json config file while the pure-json example can't tell you
 line/column numbers in the config file. In case of larger configs this can cause headaches.
 
@@ -207,14 +207,14 @@ classes:
 
 - json object (dictionary like stuff)
 - json array (list like stuff)
-- json scalar (I use "scalar" to refer any json value that isn't a container - object or array)
+- json scalar (I use "scalar" to refer any json value that isn't a container)
 
-I use *json value* to refer to a json node/element whose type is unknown or unimportant.
+I use *json value* to refer to any json node/element whose type is unknown or unimportant.
 The public API of the wrapper classes is very simple: they have no public methods. All they provide
 is a few magic methods that you can use to read/query the loaded json data. (These magic methods
 are `__contains__`, `__getattr__`, `__getitem__`, `__len__`, `__iter__` and `__call__` but don't
-worry if you don't about these magic methods as I will demonstrate the usage with simple code
-examples that don't assume that you know these magic methods.)
+worry if you don't know about these magic methods as I will demonstrate the usage with simple code
+examples that don't assume that you know them.)
 The reason for having no public methods is simple: We allow querying json object keys with
 `__getattr__` (with the dot or member access operator like `config.myvalue`) and we don't want any
 public methods to conflict with the key values in your config file.
@@ -419,20 +419,23 @@ Custom value mapper example code:
     class ToDateTime(JSONValueMapper):
         def __call__(self, v):
             if not isinstance(v, str):
-                raise TypeError('Expected a naive iso8601 datetime string but found %r' % v)
+                raise TypeError('Expected a naive iso8601 datetime string but found %r' % (v,))
             return datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
 
     config = jsoncfg.load_config('server.cfg')
 
-    # Creating an instance for reuse.
+    # Creating a value mapper instance for reuse.
     require_cool_superuser_name = OneOf('tron', 'neo')
     superuser_name = config.superuser_name(None, require_cool_superuser_name)
 
     check_http_port_range = RangeCheck(8000, 9000)
     port = config.servers[0].port(8000, check_http_port_range)
 
-    # Chaining value mappers:
-    port = config.servers[0].port(8000, require_integer, check_http_port_range)
+    # Chaining value mappers. First require_integer receives the value of the port
+    # attribute, checks/transforms it and the output of require_integer goes
+    # to the check_http_port_range value mapper. What you receive as a result of
+    # value fetching is the output of check_http_port_range.
+    port = config.servers[0].port(require_integer, check_http_port_range)
 
     # to_datetime converts a naive iso8601 datetime string into a datetime instance.
     to_datetime = ToDateTime()
@@ -452,17 +455,17 @@ exception has several subclasses.
                          +---------------------+
                          | JSONConfigException |
                          +---------------------+
-                            ▲               ▲
+                            ^               ^
                             |               |
         +-------------------+-------+       |
         | JSONConfigParserException |       |
         +---------------------------+       |
                                       +-----+----------------+
-              +---------------------->+ JSONConfigQueryError +<------------------------+
+              +---------------------->| JSONConfigQueryError |<------------------------+
               |                       +----------------------+                         |
-              |                          ▲                ▲                            |
+              |                          ^                ^                            |
               |                          |                |                            |
-              |   +----------------------------+    +------------------------------+   |
+              |   +----------------------+-----+    +-----+------------------------+   |
               |   | JSONConfigValueMapperError |    | JSONConfigValueNotFoundError |   |
               |   +----------------------------+    +------------------------------+   |
               |                                                                        |
