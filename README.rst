@@ -226,7 +226,7 @@ operations to get values from the config:
 2. fetching the python value from the selected wrapper object: this can be done by calling the
    queried wrapper object.
 
-The following sections explain these two operations in more detail.
+The following sections explain these two operations in detail.
 
 Querying the json config hierarchy
 """"""""""""""""""""""""""""""""""
@@ -275,11 +275,11 @@ of the wrapper objects. We will use the previously shown server config for the f
 
 Not all node types (object, array, scalar) support all operations. For example a scalar json value
 doesn't support `len()` and you can not iterate it. What happens if someone puts a scalar value
-into the config in place of the servers array? In that case the config loader code will sooner or
-later performs an array-specific operation on that scalar value (for example iteration) that will
-raise an exception with a useful error message pointing the the loader code with the stack trace and
-pointing to the scalar value in the config file with line/column numbers. You will find more
-json-node-type related checks and error handling mechanisms in the following sections (value
+into the config in place of the servers array? In that case the config loader code sooner or
+later performs an array-specific operation on that scalar value (for example iteration) and this
+raises an exception with a useful error message pointing the the loader code with the stack trace
+and pointing to the scalar value in the config file with line/column numbers. You can find more info
+about json-node-type related checks and error handling mechanisms in the following sections (value
 fetching and error handling).
 
 Fetching python values from the queried wrapper objects
@@ -287,8 +287,11 @@ Fetching python values from the queried wrapper objects
 
 After selecting any of the wrapper object nodes from the json config hierarchy you can fetch its
 wrapped value by using its `__call__` magic method. This works on all json node types: objects,
-arrays and scalars. If you fetch a container (object or array) then it will fetch the raw unwrapped
-values recursively - it fetches the whole subtree whose root node is the fetched wrapper object.
+arrays and scalars. If you fetch a container (object or array) then this fetch is recursive: it
+fetches the whole subtree whose root node is the fetched wrapper object. In most cases it is a
+good practice to fetch only leaf nodes of the config. Leaving the containers (objects, arrays) in
+wrappers helps getting better error messages if something goes wrong while you are processing the
+config data.
 
 .. code-block:: python
 
@@ -319,6 +322,7 @@ you are querying an **optional** item from a json object:
 
     # If "optional_value" isn't in the config then return the default value (50).
     v0 = config.optional_value(50)
+
     # This raises an exception if "required_value" isn't in the config.
     v1 = config.required_value()
 
@@ -329,7 +333,7 @@ Using value mappers to validate and/or transform fetched values
 Whether you are using a default value or not you can specify zero or more `jsoncfg.JSONValueMapper`
 instances too in the parameter list of the fetcher function call. These instances have to be
 callable, they have to have a `__call__` method that receives one parameter - the fetched value -
-and they have to return the transformed (or untouched) value. If you specify more than value value
+and they have to return the transformed (or untouched) value. If you specify more than one value
 mapper instances then these value mappers are applied to the fetched value in left-to-right order
 as you specify them in the argument list. You can use these value mapper instances not only to
 transform the fetched value, but also to perform (type) checks on them. The `jsoncfg.value_mappers`
@@ -384,7 +388,7 @@ Writing a custom value mapper (or validator)
     - Your `__call__` implementation can perform validation. If the validation fails then
       you have to raise an exception. This exception can be anything but if you don't have
       a better idea then simply use the standard `ValueError` or `TypeError`. This exception
-      will be caught by the value fetcher call and it re-raises another json-cfg specific
+      is caught by the value fetcher call and re-raised as another json-cfg specific
       exception that contains useful error message with the location of the error and that
       exception also contains the exception you raised while validating.
 
@@ -403,7 +407,7 @@ Custom value mapper example code:
 
         def __call__(self, v):
             if v not in self.enum_members:
-                raise ValueError('%r is not on of these: %r' % (v, self.enum_members))
+                raise ValueError('%r is not one of these: %r' % (v, self.enum_members))
             return v
 
     class RangeCheck(JSONValueMapper):
