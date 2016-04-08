@@ -3,15 +3,10 @@
 import os
 import re
 import codecs
-try:
-    from setuptools import setup
-    have_setuptools = True
-except ImportError:
-    from distutils.core import setup
-    have_setuptools = False
+from setuptools import setup
 
 
-script_dir = os.path.abspath(os.path.dirname(__file__))
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 def find_version(*path):
@@ -30,15 +25,8 @@ def find_version(*path):
     raise RuntimeError('Unable to determine package version.')
 
 
-# Get the long description from the relevant file
-# with open('DESCRIPTION.rst', encoding='utf-8') as f:
-#     long_description = f.read()
-
-
-extra_setup_params = {}
-if have_setuptools:
-    extra_setup_params['test_suite'] = 'tests'
-    extra_setup_params['tests_require'] = ['mock']
+with codecs.open(os.path.join(script_dir, 'README.rst'), 'r', 'utf8') as f:
+    long_description = f.read()
 
 
 setup(
@@ -46,7 +34,8 @@ setup(
     version=find_version('jsoncfg', '__init__.py'),
     description='JSON config file parser with extended json syntax (e.g.: comments), simplified '
                 'config processing, line/column numbers in error messages',
-    # long_description=long_description,
+    keywords='json config file parser configuration comment',
+    long_description=long_description,
 
     url='https://github.com/pasztorpisti/json-cfg',
 
@@ -72,8 +61,8 @@ setup(
         'Programming Language :: Python :: Implementation :: PyPy',
     ],
 
-    keywords='json config file parser configuration comment',
     packages=['jsoncfg', 'tests'],
 
-    **extra_setup_params
+    test_suite= 'tests',
+    tests_require=['mock'],
 )
