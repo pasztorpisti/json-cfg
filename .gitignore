@@ -1,30 +1,32 @@
 # Byte-compiled / optimized / DLL files
-__pycache__/
+/__pycache__/
 *.py[cod]
 
 # PyCharm
-.idea
+/.idea/
 
 # C extensions
 *.so
 
 # Distribution / packaging
 .Python
-env/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-*.egg-info/
-.installed.cfg
+/env/
+/build/
+/develop-eggs/
+/dist/
+/downloads/
+/eggs/
+/.eggs/
+/lib/
+/lib64/
+/parts/
+/sdist/
+/var/
+/*.egg-info/
+/.installed.cfg
 *.egg
+
+/README.html
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
