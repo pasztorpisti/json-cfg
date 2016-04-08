@@ -37,10 +37,10 @@ Introduction
 ------------
 
 The goal of this library is providing a json config file loader that has
-the following extras compared to the standard `json.load()`:
+the following extras compared to the standard ``json.load()``:
 
 - A larger subset of javascript (and not some weird/exotic extension to json that
-  would turn json into something that has nothing to do with json/javascript):
+  would turn it into something that has nothing to do with json/javascript):
 
     - backward compatible with json so you can still load standard json files too
     - single and multi-line comments - this is more useful then you would think:
@@ -128,13 +128,13 @@ Quick-starter
 -------------
 
 The json-cfg library provides two modes when it comes to loading config files: One that is very
-similar to the standard `json.loads()` and another one that returns the json wrapped into special
+similar to the standard ``json.loads()`` and another one that returns the json wrapped into special
 config nodes that make handling the config file much easier:
 
-- `jsoncfg.load()` and `jsoncfg.loads()` are very similar to the standard `json.loads()`.
+- ``jsoncfg.load()`` and ``jsoncfg.loads()`` are very similar to the standard ``json.loads()``.
   These functions allow you to load config files into bare python representation of the json
   data (dictionaries, lists, numbers, etc...).
-- `jsoncfg.load_config()` and `jsoncfg.loads_config()` load the json data into special wrapper
+- ``jsoncfg.load_config()`` and ``jsoncfg.loads_config()`` load the json data into special wrapper
   objects that help you to query the config with much nicer syntax. At the same time if you
   are looking for a value that doesn't exist in the config then these problems are handled with
   exceptions that contain line/column number info about the location of the error.
@@ -147,7 +147,7 @@ By loading the json nodes/elements into our wrapper objects we can retain the li
 for the json nodes/elements and we can use them in our error messages in case of semantic errors.
 
 I assume that you have already installed json-cfg and you have the previously shown server config
-example in a `server.cfg` file in the current directory.
+example in a ``server.cfg`` file in the current directory.
 
 This is how to load and process the above server configuration with a simple json library:
 
@@ -178,7 +178,7 @@ what happens when you encounter an error. With json-cfg you get an exception wit
 points to the problematic part of the json config file while the pure-json example can't tell you
 line/column numbers in the config file. In case of larger configs this can cause headaches.
 
-Open your `server.cfg` file and remove the required `ip_address` attribute from one of the server
+Open your ``server.cfg`` file and remove the required ``ip_address`` attribute from one of the server
 config blocks. This will cause an error when we try to load the config file with the above code
 examples. The above code snippets report the following error messages in this scenario:
 
@@ -197,7 +197,7 @@ json-cfg:
 Detailed explanation of the library interface
 ---------------------------------------------
 
-When you load your json with `jsoncfg.load_config()` or `jsoncfg.loads_config()` the returned json
+When you load your json with ``jsoncfg.load_config()`` or ``jsoncfg.loads_config()`` the returned json
 data - the hierarchy - is a tree of wrapper objects provided by this library. These wrapper objects
 make it possible to store the column/line numbers for each json node/element (for error reporting)
 and these wrappers allow you to query the config with the nice syntax you've seen above.
@@ -212,11 +212,11 @@ classes:
 I use *json value* to refer to any json node/element whose type is unknown or unimportant.
 The public API of the wrapper classes is very simple: they have no public methods. All they provide
 is a few magic methods that you can use to read/query the loaded json data. (These magic methods
-are `__contains__`, `__getattr__`, `__getitem__`, `__len__`, `__iter__` and `__call__` but don't
+are ``__contains__``, ``__getattr__``, ``__getitem__``, ``__len__``, ``__iter__`` and ``__call__`` but don't
 worry if you don't know about these magic methods as I will demonstrate the usage with simple code
 examples that don't assume that you know them.)
 The reason for having no public methods is simple: We allow querying json object keys with
-`__getattr__` (with the dot or member access operator like `config.myvalue`) and we don't want any
+``__getattr__`` (with the dot or member access operator like ``config.myvalue``) and we don't want any
 public methods to conflict with the key values in your config file.
 
 After loading the config you have a tree of wrapper object nodes and you have to perform these two
@@ -232,7 +232,7 @@ Querying the json config hierarchy
 """"""""""""""""""""""""""""""""""
 
 To read and query the json hierarchy and the wrapper object nodes that build up the tree you have
-to exploit the `__contains__`, `__getattr__`, `__getitem__`, `__len__`, `__iter__` magic methods
+to exploit the ``__contains__``, ``__getattr__``, ``__getitem__``, ``__len__``, ``__iter__`` magic methods
 of the wrapper objects. We will use the previously shown server config for the following examples.
 
 .. code-block:: python
@@ -274,7 +274,7 @@ of the wrapper objects. We will use the previously shown server config for the f
         pass
 
 Not all node types (object, array, scalar) support all operations. For example a scalar json value
-doesn't support `len()` and you can not iterate it. What happens if someone puts a scalar value
+doesn't support ``len()`` and you can not iterate it. What happens if someone puts a scalar value
 into the config in place of the servers array? In that case the config loader code sooner or
 later performs an array-specific operation on that scalar value (for example iteration) and this
 raises an exception with a useful error message pointing the the loader code with the stack trace
@@ -286,7 +286,7 @@ Fetching python values from the queried wrapper objects
 """""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 After selecting any of the wrapper object nodes from the json config hierarchy you can fetch its
-wrapped value by using its `__call__` magic method. This works on all json node types: objects,
+wrapped value by using its ``__call__`` magic method. This works on all json node types: objects,
 arrays and scalars. If you fetch a container (object or array) then this fetch is recursive: it
 fetches the whole subtree whose root node is the fetched wrapper object. In most cases it is a
 good practice to fetch only leaf nodes of the config. Leaving the containers (objects, arrays) in
@@ -301,7 +301,7 @@ config data.
 
     # Fetching the value of the whole json object hierarchy.
     # python_hierarchy now looks like something you normally
-    # get as a result of a standard `json.load()`.
+    # get as a result of a standard ``json.load()``.
     python_hierarchy = config()
 
     # Converting only the servers array into python-object format:
@@ -315,7 +315,7 @@ Fetching optional config values (by specifying a default value)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The value fetcher call has some optional parameters. You can call it with an optional default value
-followed by zero or more `jsoncfg.JSONValueMapper` instances. The default value comes in handy when
+followed by zero or more ``jsoncfg.JSONValueMapper`` instances. The default value comes in handy when
 you are querying an **optional** item from a json object:
 
 .. code-block:: python
@@ -330,13 +330,13 @@ you are querying an **optional** item from a json object:
 Using value mappers to validate and/or transform fetched values
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Whether you are using a default value or not you can specify zero or more `jsoncfg.JSONValueMapper`
+Whether you are using a default value or not you can specify zero or more ``jsoncfg.JSONValueMapper``
 instances too in the parameter list of the fetcher function call. These instances have to be
-callable, they have to have a `__call__` method that receives one parameter - the fetched value -
+callable, they have to have a ``__call__`` method that receives one parameter - the fetched value -
 and they have to return the transformed (or untouched) value. If you specify more than one value
 mapper instances then these value mappers are applied to the fetched value in left-to-right order
 as you specify them in the argument list. You can use these value mapper instances not only to
-transform the fetched value, but also to perform (type) checks on them. The `jsoncfg.value_mappers`
+transform the fetched value, but also to perform (type) checks on them. The ``jsoncfg.value_mappers``
 module contains a few predefined type-checkers but you can create your own value mappers.
 
 .. warning::
@@ -380,14 +380,14 @@ module contains a few predefined type-checkers but you can create your own value
 Writing a custom value mapper (or validator)
 ````````````````````````````````````````````
 
-- Derive your own value mapper class from `jsoncfg.JSONValueMapper`.
-- Implement the `__call__` method that receives one value and returns one value:
+- Derive your own value mapper class from ``jsoncfg.JSONValueMapper``.
+- Implement the ``__call__`` method that receives one value and returns one value:
 
-    - Your `__call__` method can return the received value intact but it is allowed to
+    - Your ``__call__`` method can return the received value intact but it is allowed to
       return a completely different transformed value.
-    - Your `__call__` implementation can perform validation. If the validation fails then
+    - Your ``__call__`` implementation can perform validation. If the validation fails then
       you have to raise an exception. This exception can be anything but if you don't have
-      a better idea then simply use the standard `ValueError` or `TypeError`. This exception
+      a better idea then simply use the standard ``ValueError`` or ``TypeError``. This exception
       is caught by the value fetcher call and re-raised as another json-cfg specific
       exception that contains useful error message with the location of the error and that
       exception also contains the exception you raised while validating.
@@ -449,9 +449,9 @@ Custom value mapper example code:
 Error handling: exceptions
 --------------------------
 
-The base of all library exceptions is `jsoncfg.JSONConfigException`. If the parsed json contains a
-syntax error then you receive a `jsoncfg.JSONConfigParserException` - this exception has no
-subclasses. In case of config query errors you receive a `jsoncfg.JSONConfigQueryError` - this
+The base of all library exceptions is ``jsoncfg.JSONConfigException``. If the parsed json contains a
+syntax error then you receive a ``jsoncfg.JSONConfigParserException`` - this exception has no
+subclasses. In case of config query errors you receive a ``jsoncfg.JSONConfigQueryError`` - this
 exception has several subclasses.
 
 .. code-block::
@@ -477,56 +477,56 @@ exception has several subclasses.
         | JSONConfigNodeTypeError |                                   | JSONConfigIndexError |
         +-------------------------+                                   +----------------------+
 
-`jsoncfg.JSONConfigException`
+``jsoncfg.JSONConfigException``
 
-    This is the mother of all exceptions raised by the library (aside from some some `ValueError`s
-    and `TypeErrors` that are raised in case of trivial programming mistakes). Note that this
+    This is the mother of all exceptions raised by the library (aside from some some ``ValueError``s
+    and ``TypeErrors`` that are raised in case of trivial programming mistakes). Note that this
     exception is never raised directly - the library raises only exceptions that are derived from
     this.
 
-`jsoncfg.JSONConfigParserException`
+``jsoncfg.JSONConfigParserException``
 
     You receive this exception if there is a syntax error in the parsed json.
 
-    - `error_message`: The error message without the line/column number
-      info. The standard `Exception.message` field contains this very same message but with the
+    - ``error_message``: The error message without the line/column number
+      info. The standard ``Exception.message`` field contains this very same message but with the
       line/column info formatted into it as a postfix.
-    - `line`, `column`: line and column information to locate the error easily in the parsed json.
+    - ``line``, ``column``: line and column information to locate the error easily in the parsed json.
 
-`jsoncfg.JSONConfigQueryError`
+``jsoncfg.JSONConfigQueryError``
 
     You receive this exception in case of errors you make while processing the parsed json. This
     exception class is never instantiated directly, only its subclasses are used.
 
-    - `config_node`: The json node/element that was processed when the error happened.
-    - `line`, `column`: line and column information to locate the error easily in the parsed json.
+    - ``config_node``: The json node/element that was processed when the error happened.
+    - ``line``, ``column``: line and column information to locate the error easily in the parsed json.
 
-`jsoncfg.JSONConfigValueMapperError`
+``jsoncfg.JSONConfigValueMapperError``
 
     Raised when you query and fetch a value by specifying a value mapper but the value mapper
     instance raises an exception during while fetching the value.
 
-    - `mapper_exception`: The exception instance raised by the value mapper.
+    - ``mapper_exception``: The exception instance raised by the value mapper.
 
-`jsoncfg.JSONConfigValueNotFoundError`
+``jsoncfg.JSONConfigValueNotFoundError``
 
     This is raised when you try to fetch a required (non-optional) value that doesn't exist in the
     config file.
 
-`jsoncfg.JSONConfigNodeTypeError`
+``jsoncfg.JSONConfigNodeTypeError``
 
     You get this exception if you try to perform an operation on a node that is not allowed for
     that node type (object, array or scalar), for example indexing into an array with a string.
 
-`jsoncfg.JSONConfigIndexError`
+``jsoncfg.JSONConfigIndexError``
 
     Over-indexing a json array results in this exception.
 
-    - `index`: The index used to over-index the array.
+    - ``index``: The index used to over-index the array.
 
 Utility functions
 -----------------
 
 TODO: Coming soon... The config wrapper objects have no public methods but in some cases you may
 want to extract some info from them (for example line/column number, type of node). You can
-do that with utility functions that can be imported from the `jsoncfg` module.
+do that with utility functions that can be imported from the ``jsoncfg`` module.
