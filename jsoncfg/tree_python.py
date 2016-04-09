@@ -8,6 +8,8 @@ and list objects.
 """
 from collections import OrderedDict
 
+from .parser_listener import ObjectBuilderParams
+
 
 class DefaultObjectCreator(object):
     """
@@ -111,3 +113,9 @@ class DefaultStringToScalarConverter(object):
             except ValueError:
                 listener.error('Invalid json scalar: "%s"' % (scalar_str,))
         return value
+
+
+class PythonObjectBuilderParams(ObjectBuilderParams):
+    default_object_creator = DefaultObjectCreator()
+    default_array_creator = DefaultArrayCreator()
+    default_string_to_scalar_converter = DefaultStringToScalarConverter()

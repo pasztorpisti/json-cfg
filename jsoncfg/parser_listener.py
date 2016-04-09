@@ -1,8 +1,17 @@
+from kwonly_args import kwonly_defaults
+
 from .parser import ParserListener
 
 
 class ObjectBuilderParams(object):
-    def __init__(self, object_creator, array_creator, string_to_scalar_converter):
+    # By creating a subclass of this class and overriding these
+    # attributes you can change the default values of __init__().
+    default_object_creator = None
+    default_array_creator = None
+    default_string_to_scalar_converter = None
+
+    @kwonly_defaults
+    def __init__(self, object_creator=None, array_creator=None, string_to_scalar_converter=None):
         """
         :param object_creator: A callable with signature object_creator(listener) that has to
         return a tuple: (json_object, insert_function). You can access line/column information
@@ -30,9 +39,16 @@ class ObjectBuilderParams(object):
         In case of conversion error you should call listener.error() with an error message and this
         raises an exception with information about the error location, etc...
         """
-        self.object_creator = object_creator
-        self.array_creator = array_creator
-        self.string_to_scalar_converter = string_to_scalar_converter
+        def get_default(name):
+            # We use type(self).__dict__['X'] because these class attributes are often simple
+            # functions and we don't want to convert them to instance methods by retrieving them
+            # with self.X statements.
+            return type(self).__dict__[name]
+
+        self.object_creator = object_creator or get_default('default_object_creator')
+        self.array_creator = array_creator or get_default('default_array_creator')
+        self.string_to_scalar_converter = string_to_scalar_converter or\
+            get_default('default_string_to_scalar_converter')
 
 
 class ObjectBuilderParserListener(ParserListener):

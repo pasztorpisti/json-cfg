@@ -1,8 +1,10 @@
 from unittest import TestCase
 from mock import patch
 
-from jsoncfg import load, load_config, loads, loads_config, JSONConfigParserException,\
-    JSONParserParams, DefaultStringToScalarConverter, get_python_object_builder_params
+from jsoncfg import (
+    load, load_config, loads, loads_config, JSONConfigParserException,
+    JSONParserParams, DefaultStringToScalarConverter, PythonObjectBuilderParams
+)
 
 
 TEST_JSON_STRING = """
@@ -98,7 +100,7 @@ class TestOther(TestCase):
         my_const2 = object()
         string_to_scalar_converter = DefaultStringToScalarConverter(
             scalar_const_literals={'my_const': my_const, 'my_const2': my_const2})
-        object_builder_params = get_python_object_builder_params(
+        object_builder_params = PythonObjectBuilderParams(
             string_to_scalar_converter=string_to_scalar_converter
         )
         res = loads(

@@ -9,9 +9,11 @@ an exception with useful message when a required config value is missing. The ex
 message helps to locate the error in the config file (line/column number and sometimes
 some other info).
 """
+from kwonly_args import kwonly_defaults
 
-
+from .parser_listener import ObjectBuilderParams
 from .config_classes import ConfigJSONObject, ConfigJSONArray, ConfigJSONScalar
+from .tree_python import DefaultStringToScalarConverter
 
 
 def config_object_creator(listener):
@@ -29,7 +31,7 @@ class ConfigStringToScalarConverter(object):
     A factory that converts the string representation of a json scalar into its python object
     equivalent and then returns it wrapped into a config node.
     """
-    def __init__(self, string_to_scalar_converter):
+    def __init__(self, string_to_scalar_converter=DefaultStringToScalarConverter()):
         """
         :param string_to_scalar_converter: A callable that converts the string representation of
         scalars into their python object equivalent.
@@ -39,3 +41,14 @@ class ConfigStringToScalarConverter(object):
     def __call__(self, listener, scalar_str, scalar_str_quoted):
         scalar = self.string_to_scalar_converter(listener, scalar_str, scalar_str_quoted)
         return ConfigJSONScalar(scalar, listener.line, listener.column)
+
+
+class ConfigObjectBuilderParams(ObjectBuilderParams):
+    default_object_creator = config_object_creator
+    default_array_creator = config_array_creator
+    default_string_to_scalar_converter = ConfigStringToScalarConverter()
+
+    @kwonly_defaults
+    def __init__(self, string_to_scalar_converter=DefaultStringToScalarConverter()):
+        super(ConfigObjectBuilderParams, self).__init__(
+            string_to_scalar_converter=ConfigStringToScalarConverter(string_to_scalar_converter))
