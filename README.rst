@@ -477,14 +477,14 @@ exception has several subclasses.
         | JSONConfigNodeTypeError |                                   | JSONConfigIndexError |
         +-------------------------+                                   +----------------------+
 
-``jsoncfg.JSONConfigException``
+jsoncfg.\ **JSONConfigException**
 
     This is the mother of all exceptions raised by the library (aside from some some ``ValueError``s
     and ``TypeErrors`` that are raised in case of trivial programming mistakes). Note that this
     exception is never raised directly - the library raises only exceptions that are derived from
     this.
 
-``jsoncfg.JSONConfigParserException``
+jsoncfg.\ **JSONConfigParserException**
 
     You receive this exception if there is a syntax error in the parsed json.
 
@@ -493,7 +493,7 @@ exception has several subclasses.
       line/column info formatted into it as a postfix.
     - ``line``, ``column``: line and column information to locate the error easily in the parsed json.
 
-``jsoncfg.JSONConfigQueryError``
+jsoncfg.\ **JSONConfigQueryError**
 
     You receive this exception in case of errors you make while processing the parsed json. This
     exception class is never instantiated directly, only its subclasses are used.
@@ -501,24 +501,24 @@ exception has several subclasses.
     - ``config_node``: The json node/element that was processed when the error happened.
     - ``line``, ``column``: line and column information to locate the error easily in the parsed json.
 
-``jsoncfg.JSONConfigValueMapperError``
+jsoncfg.\ **JSONConfigValueMapperError**
 
     Raised when you query and fetch a value by specifying a value mapper but the value mapper
     instance raises an exception during while fetching the value.
 
     - ``mapper_exception``: The exception instance raised by the value mapper.
 
-``jsoncfg.JSONConfigValueNotFoundError``
+jsoncfg.\ **JSONConfigValueNotFoundError**
 
     This is raised when you try to fetch a required (non-optional) value that doesn't exist in the
     config file.
 
-``jsoncfg.JSONConfigNodeTypeError``
+jsoncfg.\ **JSONConfigNodeTypeError**
 
     You get this exception if you try to perform an operation on a node that is not allowed for
     that node type (object, array or scalar), for example indexing into an array with a string.
 
-``jsoncfg.JSONConfigIndexError``
+jsoncfg.\ **JSONConfigIndexError**
 
     Over-indexing a json array results in this exception.
 
@@ -527,6 +527,105 @@ exception has several subclasses.
 Utility functions
 -----------------
 
-TODO: The config wrapper objects have no public methods but in some cases you may
-want to extract some info from them (for example line/column number, type of node). You can
-do that with utility functions that can be imported from the ``jsoncfg`` module.
+The config wrapper objects have no public methods but in some cases you may want to extract some info from them
+(for example line/column number, type of node). You can do that with utility functions that can be imported from
+the ``jsoncfg`` module.
+
+
+jsoncfg.\ **node_location**\ *(config_node)*
+
+    Returns the location of the specified config node in the file it was parsed from. The returned location is a
+    named tuple ``NodeLocation(line, column)`` containing the 1-based line and column numbers.
+
+jsoncfg.\ **node_exists**\ *(config_node)*
+
+    The library doesn't raise an error if you query a non-existing key. It raises error only when you try to fetch
+    a value from it. Querying a non-existing key returns a special ``ValueNotFoundNode`` instance and this function
+    actually checks whether the node is something else than a ``ValueNotFoundNode`` instance. A node can be
+    any part of the json: an object/dict, a list, or any other json value. Before trying to fetch a value from the
+    queried node you can test the result of a query with ``node_exists()`` whether it is an existing or non-existing
+    node in order to handle missing/optional config blocks gracefully without exceptions.
+
+    .. code-block:: python
+
+        from jsoncfg import load_config, node_exists
+
+        config = load_config('my_config.cfg')
+        if node_exists(config.whatever1.whatever2.whatever3):
+            ...
+
+        # OR an equivalent piece of code:
+
+        node = config.whatever1.whatever2.whatever3
+        if node_exists(node):
+            ...
+
+        # This node_exists() call returns True:
+        exists_1 = node_exists(config.existing_key1.existing_key2.existing_key3)
+
+        # This node_exists() call returns False:
+        exists_2 = node_exists(config.non_existing_key1.non_existing_key2)
+
+
+jsoncfg.\ **node_is_object**\ *(config_node)*
+
+    Returns ``True`` if the specified ``config_node`` is a json object/dict.
+
+
+jsoncfg.\ **node_is_array**\ *(config_node)*
+
+    Returns ``True`` if the specified ``config_node`` is a json array/list.
+
+
+jsoncfg.\ **node_is_scalar**\ *(config_node)*
+
+    Returns ``True`` if the specified ``config_node`` is a json value other than an object or array - if it isn't a
+    container.
+
+
+jsoncfg.\ **ensure_exists**\ *(config_node)*
+
+    Returns the specified ``config_node`` if it is an existing node, otherwise it raises a config error (with
+    config file location info when possible).
+
+
+jsoncfg.\ **expect_object**\ *(config_node)*
+
+    Returns the specified ``config_node`` if it is a json object/dict, otherwise it raises a config error (with
+    config file location info when possible).
+
+    In many cases you can just query and fetch objects using jsoncfg without doing explicit error handling and
+    jsoncfg provides useful error messages when an error occurs (like trying the fetch the value from a non-existing
+    node, trying to map a non-integer value to an integer, etc...). There is however at least one exception when
+    jsoncfg can't really auto-detect problems in a smart way: When you iterate over a json object or array. A json
+    object returns `(key, value)` pairs during iteration while an array returns simple items. If you just assume
+    (without actually checking) that a config node is a json object/dict and you iterate over it with auto-unpacking
+    the returned `(key, value)` pairs into two variables then you might get into trouble if your assumption is
+    incorrect and the actual config node is a json array. If it is an array then it will return simple items and
+    python fails to unpack it into two variables. The result is an ugly python runtime error and not a nice jsoncfg
+    error that says that the config node is an array and not an object/dict that your code expected. To overcome this
+    problem you can use this ``jsoncfg.expect_object()`` function to ensure that the node you iterate is a json
+    object. The same is recommended in case of json arrays: it is recommended to check them with
+    ``jsoncfg.expect_array()`` before iteration:
+
+    .. code-block:: python
+
+        from jsoncfg import load_config, expect_object, expect_array
+
+        config = load_config('server.cfg')
+        for server in expect_array(config.servers):
+            print('------------')
+            for key, value in expect_object(server):
+                print('%s: %r' % (key, value))
+
+
+jsoncfg.\ **expect_array**\ *(config_node)*
+
+    Returns the specified ``config_node`` if it is a json array/list, otherwise it raises a config error (with
+    config file location info when possible).
+
+
+jsoncfg.\ **expect_scalar**\ *(config_node)*
+
+    Returns the specified ``config_node`` if it isn't a json object or array, otherwise it raises a config error (with
+    config file location info when possible).
