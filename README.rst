@@ -527,6 +527,6 @@ exception has several subclasses.
 Utility functions
 -----------------
 
-TODO: Coming soon... The config wrapper objects have no public methods but in some cases you may
+TODO: The config wrapper objects have no public methods but in some cases you may
 want to extract some info from them (for example line/column number, type of node). You can
 do that with utility functions that can be imported from the ``jsoncfg`` module.
