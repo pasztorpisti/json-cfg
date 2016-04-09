@@ -1,6 +1,7 @@
 """
 This file contains the JSON parser that works like a SAX XML parser.
 """
+from kwonly_args import kwonly_defaults
 
 from .compatibility import my_xrange, my_unichr, my_unicode, utf8chr
 from .exceptions import JSONConfigException
@@ -105,7 +106,9 @@ class TextParser(object):
 
 
 class JSONParserParams(object):
-    def __init__(self, **params):
+    @kwonly_defaults
+    def __init__(self, tab_size=4, root_is_array=False, allow_comments=True,
+                 allow_unquoted_keys=True, allow_trailing_commas=True):
         """
         :param tab_size: Used when calculating the column of the error location. Defaults to 4.
         :param root_is_array: True: the root of the json hierarchy must be an object/dict.
@@ -117,13 +120,11 @@ class JSONParserParams(object):
         item in json objects and arrays. Comes handy when you are exchanging lines in
         the config with copy pasting.
         """
-        self.tab_size = params.pop('tab_size', 4)
-        self.root_is_array = params.pop('root_is_array', False)
-        self.allow_comments = params.pop('allow_comments', True)
-        self.allow_unquoted_keys = params.pop('allow_unquoted_keys', True)
-        self.allow_trailing_commas = params.pop('allow_trailing_commas', True)
-        if params:
-            raise RuntimeError('Unexpected keyword arguments: %s' % (params,))
+        self.tab_size = tab_size
+        self.root_is_array = root_is_array
+        self.allow_comments = allow_comments
+        self.allow_unquoted_keys = allow_unquoted_keys
+        self.allow_trailing_commas = allow_trailing_commas
 
 
 class JSONParser(TextParser):

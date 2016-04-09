@@ -107,7 +107,3 @@ class TestOther(TestCase):
             object_builder_params=object_builder_params,
         )
         self.assertEqual(res, [my_const, my_const2])
-
-    def test_get_python_object_builder_params_unexpected_parameters(self):
-        self.assertRaisesRegexp(RuntimeError, r'Unexpected parameters: ',
-                                get_python_object_builder_params, my_unexpected_param=666)

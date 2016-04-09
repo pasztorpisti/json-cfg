@@ -1,6 +1,7 @@
 """
 Contains the load functions that we use as the public interface of this whole library.
 """
+from kwonly_args import kwonly_defaults
 
 from .parser import JSONParserParams, JSONParser
 from .parser_listener import ObjectBuilderParserListener, ObjectBuilderParams
@@ -9,17 +10,13 @@ from .tree_config import config_object_creator, config_array_creator, ConfigStri
 from .text_encoding import load_utf_text_file
 
 
-def get_python_object_builder_params(**kwargs):
+@kwonly_defaults
+def get_python_object_builder_params(object_creator=None, array_creator=None, string_to_scalar_converter=None):
     """
     Creates a parameter structure for the ObjectBuilderParserListener. By default
     it initializes all factories so that the parsed object hierarchy will consist
     standard python objects (OrderedDicts, lists, etc...).
     """
-    object_creator = kwargs.pop('object_creator', None)
-    array_creator = kwargs.pop('array_creator', None)
-    string_to_scalar_converter = kwargs.pop('string_to_scalar_converter', None)
-    if kwargs:
-        raise RuntimeError('Unexpected parameters: %s' % (kwargs,))
     return ObjectBuilderParams(
         object_creator=DefaultObjectCreator() if object_creator is None else object_creator,
         array_creator=DefaultArrayCreator() if array_creator is None else array_creator,

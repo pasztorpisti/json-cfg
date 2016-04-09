@@ -32,8 +32,8 @@ with codecs.open(os.path.join(script_dir, 'README.rst'), 'r', 'utf8') as f:
 setup(
     name='json-cfg',
     version=find_version('jsoncfg', '__init__.py'),
-    description='JSON config file parser with extended json syntax (e.g.: comments), simplified '
-                'config processing, line/column numbers in error messages',
+    description='JSON config file parser with extended syntax (e.g.: comments), '
+                'line/column numbers in error messages, etc...',
     keywords='json config file parser configuration comment',
     long_description=long_description,
 
@@ -61,6 +61,7 @@ setup(
         'Programming Language :: Python :: Implementation :: PyPy',
     ],
 
+    install_requires=['kwonly-args>=1.0.7'],
     packages=['jsoncfg', 'tests'],
 
     test_suite= 'tests',
