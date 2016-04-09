@@ -4,14 +4,13 @@ python:
   - "3.3"
   - "3.4"
   - "3.5"
-  #- "nightly"
   - "pypy"
-#install: "pip install -r requirements.txt"
+  - "pypy3"
+install:
+  - pip install coveralls
 script:
   - python -m compileall -f .
-  - pip install coveralls
   - coverage run --source=jsoncfg setup.py test
-  #- python -m unittest discover -v
 after_success:
   coveralls
 notifications:
