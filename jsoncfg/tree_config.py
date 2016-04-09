@@ -17,12 +17,12 @@ from .tree_python import DefaultStringToScalarConverter
 
 
 def config_object_creator(listener):
-    obj = ConfigJSONObject(listener.parser.line, listener.parser.column)
+    obj = ConfigJSONObject(listener.parser.line+1, listener.parser.column+1)
     return obj, obj._insert
 
 
 def config_array_creator(listener):
-    array = ConfigJSONArray(listener.parser.line, listener.parser.column)
+    array = ConfigJSONArray(listener.parser.line+1, listener.parser.column+1)
     return array, array._append
 
 
@@ -40,7 +40,7 @@ class ConfigStringToScalarConverter(object):
 
     def __call__(self, listener, scalar_str, scalar_str_quoted):
         scalar = self.string_to_scalar_converter(listener, scalar_str, scalar_str_quoted)
-        return ConfigJSONScalar(scalar, listener.line, listener.column)
+        return ConfigJSONScalar(scalar, listener.line+1, listener.column+1)
 
 
 class ConfigObjectBuilderParams(ObjectBuilderParams):

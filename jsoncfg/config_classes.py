@@ -18,8 +18,6 @@ class JSONConfigQueryError(JSONConfigException):
         """
         self.config_node = config_node
         self.line, self.column = node_location(config_node)
-        self.line += 1
-        self.column += 1
         message += ' [line=%s;col=%s]' % (self.line, self.column)
         super(JSONConfigQueryError, self).__init__(message)
 
@@ -372,6 +370,8 @@ class ConfigJSONArray(ConfigNode):
 
 
 def node_location(config_node):
+    """ Returns the location of this node in the file as a tuple (line, column).
+    Both line and column are 1 based. """
     if isinstance(config_node, ConfigNode):
         return config_node._line, config_node._column
     if isinstance(config_node, ValueNotFoundNode):

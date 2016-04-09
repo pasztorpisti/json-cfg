@@ -258,7 +258,7 @@ class TestUtilityFunctions(TestCase):
     def test_node_location(self):
         config = loads_config('{k0:0}')
         location = node_location(config)
-        self.assertEquals(location, (0, 0))
+        self.assertEquals(location, (1, 1))
 
     def test_node_location_with_value_not_found_node(self):
         config = loads_config('{}')
