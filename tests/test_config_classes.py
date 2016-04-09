@@ -256,9 +256,11 @@ class TestConfigJSONArray(TestCase):
 
 class TestUtilityFunctions(TestCase):
     def test_node_location(self):
-        config = loads_config('{k0:0}')
+        config = loads_config('\n{k0:0}')
         location = node_location(config)
-        self.assertEquals(location, (1, 1))
+        self.assertEquals(location, (2, 1))
+        self.assertEquals(location.line, 2)
+        self.assertEquals(location.column, 1)
 
     def test_node_location_with_value_not_found_node(self):
         config = loads_config('{}')

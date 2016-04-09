@@ -1,5 +1,5 @@
 import numbers
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 
 from .compatibility import my_basestring
 from .exceptions import JSONConfigException
@@ -369,11 +369,14 @@ class ConfigJSONArray(ConfigNode):
         self._list.append(item)
 
 
+_NodeLocation = namedtuple('NodeLocation', 'line column')
+
+
 def node_location(config_node):
     """ Returns the location of this node in the file as a tuple (line, column).
     Both line and column are 1 based. """
     if isinstance(config_node, ConfigNode):
-        return config_node._line, config_node._column
+        return _NodeLocation(config_node._line, config_node._column)
     if isinstance(config_node, ValueNotFoundNode):
         raise JSONConfigValueNotFoundError(config_node)
     raise TypeError('Expected a config node but received a %s instance.' %
