@@ -1,9 +1,13 @@
 from unittest import TestCase
-from jsoncfg.config_classes import ValueNotFoundNode, ConfigJSONScalar, ConfigJSONObject,\
-    ConfigJSONArray, JSONConfigNodeTypeError, ConfigNode, JSONConfigIndexError
+from jsoncfg.config_classes import (
+    ValueNotFoundNode, ConfigJSONScalar, ConfigJSONObject, ConfigJSONArray, JSONConfigNodeTypeError, ConfigNode,
+    JSONConfigIndexError,
+)
 from jsoncfg import JSONConfigValueNotFoundError, JSONParserParams, JSONValueMapper
-from jsoncfg import loads_config, node_location, node_exists, node_is_object, node_is_array,\
-    node_is_scalar, ensure_exists, expect_object, expect_array, expect_scalar
+from jsoncfg import (
+    loads_config, node_location, node_exists, node_is_object, node_is_array,
+    node_is_scalar, ensure_exists, expect_object, expect_array, expect_scalar,
+)
 
 from .utils import WrapCallable
 

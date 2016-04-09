@@ -2,8 +2,9 @@ from unittest import TestCase
 from mock import patch, MagicMock
 
 from jsoncfg.compatibility import python2
-from jsoncfg.text_encoding import detect_encoding_and_remove_bom, decode_utf_text_buffer,\
-    load_utf_text_file
+from jsoncfg.text_encoding import (
+    detect_encoding_and_remove_bom, decode_utf_text_buffer, load_utf_text_file
+)
 
 
 class TestEncodingFunctions(TestCase):
