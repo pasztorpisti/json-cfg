@@ -67,7 +67,7 @@ def default_number_converter(number_str):
     return int(number_str) if is_int else float(number_str)
 
 
-class StringToScalarConverter(object):
+class DefaultStringToScalarConverter(object):
     """
     A callable that converts the string representation of json scalars into python objects.
     The JSONParser works only with quoted and non-quoted strings, it doesn't interpret different

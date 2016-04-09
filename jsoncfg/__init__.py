@@ -10,7 +10,7 @@ from .config_classes import JSONConfigQueryError, JSONConfigValueMapperError,\
 from .functions import loads, load, loads_config, load_config, get_python_object_builder_params,\
     JSONParserParams, ObjectBuilderParams
 from .tree_python import DefaultObjectCreator, DefaultArrayCreator, default_number_converter,\
-    StringToScalarConverter
+    DefaultStringToScalarConverter
 
 __all__ = [
     'JSONConfigException',
@@ -23,7 +23,7 @@ __all__ = [
     'loads', 'load', 'loads_config', 'load_config', 'get_python_object_builder_params',
     'JSONParserParams', 'ObjectBuilderParams',
     'DefaultObjectCreator', 'DefaultArrayCreator', 'default_number_converter',
-    'StringToScalarConverter',
+    'DefaultStringToScalarConverter',
 ]
 
 # version_info[0]: Increase in case of large milestones/releases.

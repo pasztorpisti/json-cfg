@@ -5,7 +5,7 @@ from kwonly_args import kwonly_defaults
 
 from .parser import JSONParserParams, JSONParser
 from .parser_listener import ObjectBuilderParserListener, ObjectBuilderParams
-from .tree_python import DefaultObjectCreator, DefaultArrayCreator, StringToScalarConverter
+from .tree_python import DefaultObjectCreator, DefaultArrayCreator, DefaultStringToScalarConverter
 from .tree_config import config_object_creator, config_array_creator, ConfigStringToScalarConverter
 from .text_encoding import load_utf_text_file
 
@@ -20,7 +20,7 @@ def get_python_object_builder_params(object_creator=None, array_creator=None, st
     return ObjectBuilderParams(
         object_creator=DefaultObjectCreator() if object_creator is None else object_creator,
         array_creator=DefaultArrayCreator() if array_creator is None else array_creator,
-        string_to_scalar_converter=StringToScalarConverter() if string_to_scalar_converter is None
+        string_to_scalar_converter=DefaultStringToScalarConverter() if string_to_scalar_converter is None
         else string_to_scalar_converter,
     )
 
@@ -46,7 +46,7 @@ def loads(s,
 
 def loads_config(s,
                  parser_params=JSONParserParams(),
-                 string_to_scalar_converter=StringToScalarConverter()):
+                 string_to_scalar_converter=DefaultStringToScalarConverter()):
     """
     Works similar to the loads() function but this one returns a json object hierarchy
     that wraps all json objects, arrays and scalars to provide a nice config query syntax.
