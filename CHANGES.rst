@@ -9,6 +9,7 @@ Recent changes
 *Release date: future*
 
 - Adding this CHANGES.rst file.
+- Moving library sources to an ``src`` subdir and excluding the ``tests`` package from the installation.
 
 
 v0.4.0-beta
