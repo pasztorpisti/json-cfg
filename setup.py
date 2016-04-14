@@ -65,6 +65,6 @@ setup(
     packages=find_packages('src'),
     package_dir={'': 'src'},
 
-    test_suite= 'tests',
+    test_suite='tests',
     tests_require=['mock'],
 )
