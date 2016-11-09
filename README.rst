@@ -499,7 +499,7 @@ deciding if you need to save or not
 
     config = jsoncfg.ConfigWithWrapper('server.cfg')
 
-    with config:
+    with config as c:
         # This will store an array as a property of the root config object
         c.example_arr = arr
 
