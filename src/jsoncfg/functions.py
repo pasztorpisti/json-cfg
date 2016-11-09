@@ -1,3 +1,5 @@
+import json
+
 """
 Contains the load functions that we use as the public interface of this whole library.
 """
@@ -51,7 +53,8 @@ def loads_config(s,
     default is returned. In this case mapper isn't called with the default value.
     """
     parser = JSONParser(parser_params)
-    object_builder_params = ConfigObjectBuilderParams(string_to_scalar_converter=string_to_scalar_converter)
+    object_builder_params = ConfigObjectBuilderParams(
+        string_to_scalar_converter=string_to_scalar_converter)
     listener = ObjectBuilderParserListener(object_builder_params)
     parser.parse(s, listener)
     return listener.result
@@ -95,3 +98,103 @@ def load_config(file_, *args, **kwargs):
         use_utf8_strings=kwargs.pop('use_utf8_strings', True),
     )
     return loads_config(json_str, *args, **kwargs)
+
+
+def save_config(fileName, config):
+    with open(fileName, 'w') as fobj:
+        fobj.write(config_to_json_str(config))
+
+
+def config_to_json_str(config):
+    json_data = __config_to_json(config)
+    return json.dumps(json_data, sort_keys=True,
+                      indent=4, separators=(',', ': '))
+
+
+def __config_to_json(config_json_object):
+    jsonData = {}
+    for key, value in config_json_object._dict.items():
+        if key.startswith('_'):
+            continue
+
+        jsonData[key] = __convert_to_json_type(value)
+
+    return jsonData
+
+
+def __convert_to_json_type(item):
+    from .config_classes import ConfigJSONObject, ConfigJSONArray, ConfigJSONScalar
+
+    if isinstance(item, ConfigJSONObject):
+        return __config_to_json(item)
+
+    if isinstance(item, ConfigJSONArray):
+        return [__convert_to_json_type(i) for i in item]
+
+    if isinstance(item, ConfigJSONScalar):
+        return item.value
+
+    return item
+
+
+class ConfigWithWrapper:
+    def __init__(self, config_file_name):
+        self.__config = load_config(config_file_name)
+        self.__config_file_name = config_file_name
+
+        self.__check_str = None
+
+    def __getattr__(self, item):
+        """ For direct usage, with out the with bock """
+        if item.startswith('_ConfigWithWrapper__'):
+            return getattr(self, item)
+
+        return getattr(self.__config, item)
+
+    def __getitem__(self, item):
+        """ For direct usage, with out the with bock """
+        return self.__config[item]
+
+    def __setattr__(self, item, value):
+        """ For direct usage, with out the with bock """
+        if item.startswith('_ConfigWithWrapper__'):
+            self.__dict__[item] = value
+            return
+
+        setattr(self.__config, item, value)
+
+    def __setitem__(self, item, value):
+        """ For direct usage, with out the with bock """
+        self.__config[item] = value
+
+    def __call__(self, *args, **kwargs):
+        """ For direct usage, with out the with bock """
+        return self.__config(*args, **kwargs)
+
+    def __len__(self):
+        """ For direct usage, with out the with bock """
+        return len(self.__config)
+
+    def __contains__(self, item):
+        """ For direct usage, with out the with bock """
+        return item in self.__config
+
+    def __enter__(self):
+        """ Enter the with bloc
+
+        Store the current state of the config, so we can compare it to see if we need
+        to save it.
+
+        """
+        self.__check_str = str(self.__config)
+        return self.__config
+
+    def __exit__(self, type, value, tb):
+        """  Exit the with block
+
+        See if anything has changed, if it has, save it.
+
+        """
+
+        if self.__check_str != str(self.__config):
+            save_config(self.__config_file_name, self.__config)
