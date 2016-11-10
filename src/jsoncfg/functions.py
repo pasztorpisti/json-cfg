@@ -186,7 +186,7 @@ class ConfigWithWrapper:
         to save it.
 
         """
-        self.__check_str = str(self.__config)
+        self.__check_str = config_to_json_str(self.__config)
         return self.__config
 
     def __exit__(self, type, value, tb):
@@ -196,5 +196,5 @@ class ConfigWithWrapper:
 
         """
 
-        if self.__check_str != str(self.__config):
+        if self.__check_str != config_to_json_str(self.__config):
             save_config(self.__config_file_name, self.__config)

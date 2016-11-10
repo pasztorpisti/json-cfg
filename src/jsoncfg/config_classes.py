@@ -180,8 +180,9 @@ class ValueNotFoundNode(object):
 
         # If we do have a default then automatically create the value
         assert len(self._missing_query_path) == 1
-        self._parent_config_node._insert(self._missing_query_path[-1],
-                                         ConfigJSONScalar(default, -1, -1))
+
+        newNode = ConfigNode(-1, -1)._make_config_tree_from_value(default)
+        self._parent_config_node._insert(self._missing_query_path[-1], newNode)
 
         return default
 
@@ -290,13 +291,13 @@ class ConfigNode(object):
         if isinstance(value, dict):
             cfg = ConfigJSONObject(-1, -1)
             for item, value in value.items():
-                cfg[item] = value
+                cfg[item] = self._make_config_tree_from_value(value)
             return cfg
 
         if isinstance(value, list):
             cfg = ConfigJSONArray(-1, -1)
-            for value in value:
-                cfg.append(value)
+            for val in value:
+                cfg.append(self._make_config_tree_from_value(val))
             return cfg
 
         if (isinstance(value, basestring)
