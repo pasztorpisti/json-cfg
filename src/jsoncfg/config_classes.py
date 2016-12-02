@@ -6,7 +6,6 @@ from .exceptions import JSONConfigException
 
 _undefined = object()
 
-
 class JSONConfigQueryError(JSONConfigException):
     """
     The base class of every exceptions thrown by this library during config queries.
@@ -187,7 +186,7 @@ class ValueNotFoundNode(object):
         return default
 
     def _create_default_parent(self, item):
-        if isinstance(item, basestring):
+        if isinstance(item, my_basestring):
             new_parent = ConfigJSONObject(-1, -1)
 
         else:
@@ -300,7 +299,7 @@ class ConfigNode(object):
                 cfg.append(self._make_config_tree_from_value(val))
             return cfg
 
-        if (isinstance(value, basestring)
+        if (isinstance(value, my_basestring)
             or isinstance(value, int)
             or isinstance(value, bool)
             or isinstance(value, float)
