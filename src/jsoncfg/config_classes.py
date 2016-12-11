@@ -4,14 +4,13 @@ from collections import OrderedDict, namedtuple
 from .compatibility import my_basestring
 from .exceptions import JSONConfigException
 
-
 _undefined = object()
-
 
 class JSONConfigQueryError(JSONConfigException):
     """
     The base class of every exceptions thrown by this library during config queries.
     """
+
     def __init__(self, config_node, message):
         """
         :param config_node: An instance of one of the subclasses of _ConfigNode.
@@ -27,6 +26,7 @@ class JSONConfigValueMapperError(JSONConfigQueryError):
     This is raised when someone fetches a value by specifying the "mapper" parameter
     and the mapper function raises an exception. That exception is converted into this one.
     """
+
     def __init__(self, config_node, mapper_exception):
         """
         :param config_node:  An instance of one of the subclasses of _ConfigNode.
@@ -43,6 +43,7 @@ class JSONConfigValueNotFoundError(JSONConfigQueryError):
     """
     Raised when the user tries to fetch a value that doesn't exist in the config.
     """
+
     def __init__(self, value_not_found):
         """
         :param value_not_found: A ValueNotFoundNode instance. Let's say that you query the
@@ -64,10 +65,11 @@ class JSONConfigValueNotFoundError(JSONConfigQueryError):
                 path.append('.' + component)
         self.relative_path = ''.join(path)
         # TODO: improve the error message: it is possible to do so based on the info we have
-        message = 'Required config node not found. Missing query path: %s'\
-            ' (relative to error location)' % self.relative_path
-        super(JSONConfigValueNotFoundError, self).__init__(value_not_found._parent_config_node,
-                                                           message)
+        message = 'Required config node not found. Missing query path: %s' \
+                  ' (relative to error location)' % self.relative_path
+        super(JSONConfigValueNotFoundError, self).__init__(
+            value_not_found._parent_config_node,
+            message)
 
 
 class JSONConfigNodeTypeError(JSONConfigQueryError):
@@ -76,6 +78,7 @@ class JSONConfigNodeTypeError(JSONConfigQueryError):
     to be something else than its actual type. For example you are trying to iterate
     over the key-value pairs of a value that is not json object.
     """
+
     def __init__(self, config_node, expected_type, error_message=None):
         """
         :param config_node: An instance of one of the subclasses of _ConfigNode.
@@ -85,7 +88,8 @@ class JSONConfigNodeTypeError(JSONConfigQueryError):
         if not isinstance(expected_type, (list, tuple)):
             expected_type = (expected_type,)
         expected_names = [t.__name__ for t in expected_type]
-        message = 'Expected a %s but found %s.' % (' or '.join(expected_names), found_type_name)
+        message = 'Expected a %s but found %s.' % (
+            ' or '.join(expected_names), found_type_name)
         if error_message is not None:
             message += ' %s' % (error_message,)
         super(JSONConfigNodeTypeError, self).__init__(config_node, message)
@@ -96,6 +100,7 @@ class JSONConfigIndexError(JSONConfigQueryError):
     This is raised when you try to index into an array node and the index is out of range. Indexing
     into a different kind of node (object, scalar) doesn't raise this.
     """
+
     def __init__(self, config_json_array, index):
         self.index = index
         message = 'Index (%s) is out of range [0, %s)' % (index, len(config_json_array))
@@ -161,16 +166,65 @@ class ValueNotFoundNode(object):
         If a default value is provided then we return it otherwise we raise an exception since
         the user tries to fetch a required value that isn't in the config file.
         """
-        default, _ = _process_value_fetcher_call_args(args)
+        default, mappers = _process_value_fetcher_call_args(args)
         if default is _undefined:
             raise JSONConfigValueNotFoundError(self)
+
+        # Validate the default value with the mappers
+        try:
+            for mapper in mappers:
+                default = mapper(default)
+        except Exception as e:
+            raise JSONConfigValueMapperError(self, e)
+
+        # If we do have a default then automatically create the value
+        assert len(self._missing_query_path) == 1
+
+        newNode = ConfigNode(-1, -1)._make_config_tree_from_value(default)
+        self._parent_config_node._insert(self._missing_query_path[-1], newNode)
+
         return default
+
+    def _create_default_parent(self, item):
+        if isinstance(item, my_basestring):
+            new_parent = ConfigJSONObject(-1, -1)
+
+        else:
+            assert isinstance(item, int)
+            new_parent = ConfigJSONArray(-1, -1)
+
+        assert len(self._missing_query_path) == 1
+        self._parent_config_node._insert(self._missing_query_path[-1], new_parent)
+
+        return new_parent
 
     def __getattr__(self, item):
         return self.__getitem__(item)
 
     def __getitem__(self, item):
-        return ValueNotFoundNode(self._parent_config_node, self._missing_query_path + [item])
+        ''' Get Item
+
+        Based on the item that is being got, we can tell if we're (self) supposed to be
+        an array or an object/dict
+
+        So create a real node for our selves and return the approproate missing node
+
+        '''
+
+        new_parent = self._create_default_parent(item)
+
+        return ValueNotFoundNode(new_parent, [item])
+
+    def __setattr__(self, item, value):
+        return self.__setitem__(item, value)
+
+    def __setitem__(self, item, value):
+        if item in ('_parent_config_node', '_missing_query_path'):
+            self.__dict__[item] = value
+            return
+
+        new_parent = self._create_default_parent(item)
+        new_parent[item] = value
 
     def __len__(self):
         raise JSONConfigValueNotFoundError(self)
@@ -198,6 +252,7 @@ class ConfigNode(object):
         super(ConfigNode, self).__init__()
         self._line = line
         self._column = column
+        self._mappers = []
 
     def __call__(self, *args):
         """
@@ -208,17 +263,56 @@ class ConfigNode(object):
         default value is ignored. If we have JSONValueMapper instances then we apply them to
         the wrapped json value in left-to-right order before returning the json value.
         """
-        _, mappers = _process_value_fetcher_call_args(args)
+        _, self._mappers = _process_value_fetcher_call_args(args)
         value = self._fetch_unwrapped_value()
-        try:
-            for mapper in mappers:
-                value = mapper(value)
-        except Exception as e:
-            raise JSONConfigValueMapperError(self, e)
+        self._validate_mappers(value)
+
         return value
 
     def _fetch_unwrapped_value(self):
         raise NotImplementedError()
+
+    def _item_type_check(self, item):
+        raise NotImplementedError("This method must be overloaded")
+
+    def _validate_mappers(self, value):
+        try:
+            for mapper in self._mappers:
+                value = mapper(value)
+
+        except Exception as e:
+            raise JSONConfigValueMapperError(self, e)
+
+    def _make_config_tree_from_value(self, value):
+        if isinstance(value, ConfigNode):
+            return value
+
+        if isinstance(value, dict):
+            cfg = ConfigJSONObject(-1, -1)
+            for item, value in value.items():
+                cfg[item] = self._make_config_tree_from_value(value)
+            return cfg
+
+        if isinstance(value, list):
+            cfg = ConfigJSONArray(-1, -1)
+            for val in value:
+                cfg.append(self._make_config_tree_from_value(val))
+            return cfg
+
+        if (isinstance(value, my_basestring)
+            or isinstance(value, int)
+            or isinstance(value, bool)
+            or isinstance(value, float)
+            or value is None):
+            return ConfigJSONScalar(value, -1, -1)
+
+        raise JSONConfigNodeTypeError(
+            self,
+            ConfigJSONScalar,
+            'ConfigJSONScalar only supports scalars of type'
+            'None, int, string, float, bool. value=%s' % (
+                value,)
+        )
 
 
 class ConfigJSONScalar(ConfigNode):
@@ -226,34 +320,31 @@ class ConfigJSONScalar(ConfigNode):
         super(ConfigJSONScalar, self).__init__(line, column)
         self.value = value
 
-    def __getattr__(self, item):
-        raise JSONConfigNodeTypeError(
-            self,
-            ConfigJSONObject,
-            'You are trying to get an item from a scalar as if it was an object. item=%s' % (item,)
-        )
-
-    def __getitem__(self, item):
+    def _item_type_check(self, item):
         if not isinstance(item, (my_basestring, numbers.Integral)):
             raise TypeError('You are allowed to index only with string or integer.')
         if isinstance(item, numbers.Integral):
             raise JSONConfigNodeTypeError(
                 self,
                 ConfigJSONArray,
-                'You are trying to index into a scalar as if it was an array. index=%s' % (item,)
+                'You are trying to index into a scalar as if it was an array. index=%s' % (
+                    item,)
             )
         raise JSONConfigNodeTypeError(
             self,
             ConfigJSONObject,
-            'You are trying to get an item from a scalar as if it was an object. item=%s' % (item,)
+            'You are trying to get an item from a scalar as if it was an object. item=%s' % (
+                item,)
         )
 
+    def __getattr__(self, item):
+        self.__getitem__(item)
+
+    def __getitem__(self, item):
+        self._item_type_check(item)
+
     def __contains__(self, item):
-        raise JSONConfigNodeTypeError(
-            self,
-            ConfigJSONObject,
-            'You are trying to access the __contains__ magic method of a scalar config object.'
-        )
+        self._item_type_check(item)
 
     def __len__(self):
         raise JSONConfigNodeTypeError(
@@ -282,21 +373,40 @@ class ConfigJSONObject(ConfigNode):
         super(ConfigJSONObject, self).__init__(line, column)
         self._dict = OrderedDict()
 
-    def __getattr__(self, item):
-        return self.__getitem__(item)
-
-    def __getitem__(self, item):
+    def _item_type_check(self, item):
         if isinstance(item, numbers.Integral):
             raise JSONConfigNodeTypeError(
                 self,
                 ConfigJSONArray,
-                'You are trying to index into an object as if it was an array. index=%s' % (item,)
+                'You are trying to index into an object as if it was an array. index=%s' % (
+                    item,)
             )
         if not isinstance(item, my_basestring):
             raise TypeError('You are allowed to index only with string or integer.')
+
+    def __getattr__(self, item):
+        if item in ('_dict', '_line', '_column', '_mappers'):
+            return getattr(self, item)
+
+        return self.__getitem__(item)
+
+    def __getitem__(self, item):
+        self._item_type_check(item)
+
         if item in self._dict:
             return self._dict[item]
         return ValueNotFoundNode(self, [item])
+
+    def __setattr__(self, item, value):
+        if item in ('_dict', '_line', '_column', '_mappers'):
+            ConfigNode.__setattr__(self, item, value)
+            return
+
+        self.__setitem__(item, value)
+
+    def __setitem__(self, item, value):
+        self._item_type_check(item)
+        self._dict[item] = self._make_config_tree_from_value(value)
 
     def __contains__(self, item):
         return item in self._dict
@@ -312,7 +422,8 @@ class ConfigJSONObject(ConfigNode):
                                                    len(self), self._line, self._column)
 
     def _fetch_unwrapped_value(self):
-        return {key: node._fetch_unwrapped_value() for key, node in self._dict.items()}
+        return {key: node._fetch_unwrapped_value()
+                for key, node in self._dict.items()}
 
     def _insert(self, key, value):
         self._dict[key] = value
@@ -323,34 +434,50 @@ class ConfigJSONArray(ConfigNode):
         super(ConfigJSONArray, self).__init__(line, column)
         self._list = []
 
-    def __getattr__(self, item):
+    def _item_type_check(self, item):
+        if isinstance(item, numbers.Integral):
+            return
+
         raise JSONConfigNodeTypeError(
             self,
             ConfigJSONObject,
-            'You are trying to get an item from an array as if it was an object. item=%s' % (item,)
+            'You are trying to get an item from an array as if it was an object. item=%s' % (
+                item,)
         )
 
+    def __getattr__(self, item):
+        if item in ('_dict', '_line', '_column', '_mappers'):
+            return getattr(self, item)
+
+        self._item_type_check(item)
+
     def __getitem__(self, item):
+        self._item_type_check(item)
+
         if isinstance(item, numbers.Integral):
             if item < 0:
                 item += len(self._list)
             if 0 <= item < len(self._list):
                 return self._list[item]
             raise JSONConfigIndexError(self, item)
-        if not isinstance(item, my_basestring):
-            raise TypeError('You are allowed to index only with string or integer.')
+
+    def __setattr__(self, item, value):
+        if item in ('_list', '_line', '_column', '_mappers'):
+            ConfigNode.__setattr__(self, item, value)
+            return
+        self.__setitem__(item, value)
+
+    def __setitem__(self, item, value):
+        self._item_type_check(item)
+
         raise JSONConfigNodeTypeError(
             self,
-            ConfigJSONObject,
-            'You are trying to get an item from an array as if it was an object. item=%s' % (item,)
+            ConfigJSONArray,
+            'Item assignment is not implemented, item=%s' % (item,)
         )
 
     def __contains__(self, item):
-        raise JSONConfigNodeTypeError(
-            self,
-            ConfigJSONObject,
-            'You are trying to access the __contains__ magic method of an array.'
-        )
+        return self._item_type_check(str(item))
 
     def __len__(self):
         return len(self._list)
@@ -365,8 +492,8 @@ class ConfigJSONArray(ConfigNode):
     def _fetch_unwrapped_value(self):
         return [node._fetch_unwrapped_value() for node in self._list]
 
-    def _append(self, item):
-        self._list.append(item)
+    def append(self, value):
+        self._list.append(self._make_config_tree_from_value(value))
 
 
 _NodeLocation = namedtuple('NodeLocation', 'line column')

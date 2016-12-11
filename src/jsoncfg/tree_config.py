@@ -23,7 +23,7 @@ def config_object_creator(listener):
 
 def config_array_creator(listener):
     array = ConfigJSONArray(listener.parser.line+1, listener.parser.column+1)
-    return array, array._append
+    return array, array.append
 
 
 class ConfigStringToScalarConverter(object):

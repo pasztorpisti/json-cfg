@@ -446,6 +446,88 @@ Custom value mapper example code:
     superuser_birthday = config.superuser_birthday(None, to_datetime)
 
 
+Setting python values to the wrapper objects and saving the config
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+jsoncfg can also be used to write back the json config file. However, the file will be
+written using json.dump, and all comments will be lost.
+
+.. code-block:: python
+
+    # TODO : Unit tests based on this example
+
+    import jsoncfg
+
+    server_file_name = 'server.cfg'
+
+    config = jsoncfg.load_config(server_file_name)
+
+    # Create some values and store them
+    arr = [1, 2, "three"]
+    config.example_arr = arr
+
+    # As "subobj1" doesn't exist, it will be created as a json object, and then "val1"
+    # will be assigned to it
+    val1 = "This is a string value"
+    config.subobj1.val1 = val1
+
+    # The assignment is clever enough to accept json compatible structures
+    obj = {"key1":1,
+           "key2":"two",
+           "subobj1": {} }
+    c.obj1 = obj
+
+    # Now that we've created some data, we can save it.
+    jsoncfg.save_config(server_file_name, config)
+
+    # Now lets load it up again and check that the values match
+    config = jsoncfg.load_config(server_file_name)
+    assert config.example_arr == arr
+    assert config.subobj1.val1 == val1
+    assert str(config.obj1) == str(obj) # This comparison may not work
+
+
+Saving the config with a with block
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+jsoncfg has a wrapper class and a with block, taking much of the burdon away from
+deciding if you need to save or not
+
+.. code-block:: python
+
+    # TODO : Unit tests based on this example
+
+    import jsoncfg
+
+    server_file_name = 'server.cfg'
+    obj = {"key1":1,
+           "key2":"two",
+           "subobj1": {} }
+    arr = [1, 2, "three"]
+    val1 = "This is a string value"
+
+    config = jsoncfg.ConfigWithWrapper('server.cfg')
+
+    with config as c:
+        # This will store an array as a property of the root config object
+        c.example_arr = arr
+
+        # As "subobj1" doesn't exist, it will be created as a json object, and then "val1"
+        # will be assigned to it
+        c.subobj1.val1 = val1
+
+        # The assignment is clever enough to accept json compatible structures
+        c.obj1 = obj
+
+    # The config file is automatically saved when we left the with block
+
+    # Now lets load it up again and check that the values match
+    config = jsoncfg.load_config(server_file_name)
+    assert config.example_arr == arr
+    assert config.subobj1.val1 == val1
+    assert str(config.obj1) == str(obj) # This comparison may not work
+
+
 Error handling: exceptions
 --------------------------
 
