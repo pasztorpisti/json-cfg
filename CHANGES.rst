@@ -3,6 +3,15 @@ CHANGES
 =======
 
 
+v0.4.2-beta
+-----------
+
+*Release date: 2017-02-15*
+
+- Making the code python 2.6 compatible. While supporting python 2.6 isn't a goal,
+  it required only removing a dict comprehension.
+
+
 v0.4.1-beta
 -----------
 
