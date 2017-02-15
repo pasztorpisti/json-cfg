@@ -312,7 +312,7 @@ class ConfigJSONObject(ConfigNode):
                                                    len(self), self._line, self._column)
 
     def _fetch_unwrapped_value(self):
-        return {key: node._fetch_unwrapped_value() for key, node in self._dict.items()}
+        return dict((key, node._fetch_unwrapped_value()) for key, node in self._dict.items())
 
     def _insert(self, key, value):
         self._dict[key] = value
