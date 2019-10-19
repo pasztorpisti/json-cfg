@@ -6,13 +6,9 @@ json-cfg
     :target: https://travis-ci.org/pasztorpisti/json-cfg
     :alt: build
 
-.. image:: https://img.shields.io/codacy/25854a088e89472f9fbf2bd5c1633834.svg?style=flat
+.. image:: https://img.shields.io/codacy/grade/25854a088e89472f9fbf2bd5c1633834.svg?style=flat
     :target: https://www.codacy.com/app/pasztorpisti/json-cfg
     :alt: code quality
-
-.. image:: https://landscape.io/github/pasztorpisti/json-cfg/master/landscape.svg?style=flat
-    :target: https://landscape.io/github/pasztorpisti/json-cfg/master
-    :alt: code health
 
 .. image:: https://img.shields.io/coveralls/pasztorpisti/json-cfg/master.svg?style=flat
     :target: https://coveralls.io/r/pasztorpisti/json-cfg?branch=master
