@@ -12,10 +12,10 @@ def load_utf_text_file(file_, default_encoding='UTF-8', use_utf8_strings=True):
     :return: A unicode object. In case of python2 it can optionally be an str object
     containing utf-8 encoded text.
     """
-    if isinstance(file_, my_basestring):
+    try:
         with open(file_, 'rb') as f:
             buf = f.read()
-    else:
+    except TypeError:
         buf = file_.read()
     return decode_utf_text_buffer(buf, default_encoding, use_utf8_strings)
 
